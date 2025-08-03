@@ -588,7 +588,7 @@ elif OPTIMIZER_SELECTED == "KOURKOUTAS":
         beta2_max=0.999,
         beta2_min=0.88,
         eps=1e-8,
-        alpha=0.93,  # ONLY FOR PINNS, NORMALLY 0.95
+        alpha=0.93,
         #alpha = alpha_schedule,
         tiny_spike=1.e-9,
         tiny_denom=1.e-8,
