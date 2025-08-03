@@ -1,3 +1,4 @@
+# tests/test_smoke.py
 """
 tests/test_smoke.py
 ––––––––––––––––––––
