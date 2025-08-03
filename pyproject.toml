@@ -3,7 +3,7 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kbeta-pinn3d"
+name = "kbeta_pinn3d"
 version = "0.0.0a0"
 description = "3‑D cylindrical PINN demo for the Kourkoutas‑β optimizer paper"
 authors = [{name = "Stavros Kassinos", email = "kassinos.stavros@ucy.ac.cy"}]
