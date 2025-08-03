@@ -25,7 +25,7 @@
 7. [Using your own geometry](#using-your-own-geometry)
 8. [Tests and linting](#tests-and-linting)
 9. [Command-line options](#command-line-options)
-10. [Relation to Kourkoutas‑β](#relation-to-kourkoutas-β)
+10. [Relation to Kourkoutas-β](#relation-to-kourkoutas-β)
 11. [Citation](#citation)
 12. [License](#license)
 
@@ -202,7 +202,7 @@ python -m kbeta_pinn3d.pinn3d \
        --viz
 ```
 
-## Relation to Kourkoutas‑β
+## Relation to Kourkoutas-β
 This workload is the **PDE‑heavy sibling** to the 2‑D Transformer demo in
 [`kbeta-transformer2d`](https://github.com/sck-at-ucy/kbeta-transformer2d).  
 Both share the same optimiser code (`kbeta.optim.KourkoutasSoftmaxFlex`) but
