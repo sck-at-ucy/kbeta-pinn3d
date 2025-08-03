@@ -25,7 +25,7 @@
 7. [Using your own geometry](#using-your-own-geometry)
 8. [Tests and linting](#tests-and-linting)
 9. [CLI options](#cli-options)
-10. [Relation to Kourkoutas‑β](#relation-to-kourkoutas-β)
+10. [Relation to Kourkoutas‑β](#relation-to-kourkoutas--β)
 11. [Citation](#citation)
 12. [License](#license)
 
