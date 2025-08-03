@@ -202,6 +202,28 @@ python -m kbeta_pinn3d.pinn3d \
        --viz
 ```
 
+The paper runs were made with the following defaults hyper-params for Kourkoutas-β
+
+```python
+    optimizer = KourkoutasSoftmaxFlex(
+        learning_rate= lr_schedule,
+        beta1=0.90,
+        beta2_max=0.999,
+        beta2_min=0.88,
+        eps=1e-8,
+        alpha=0.93,
+        tiny_spike=1.e-9,
+        tiny_denom=1.e-8,
+        decay=0.98,
+        adaptive_tiny=True,
+        max_ratio=3,
+        warmup_steps=0,
+        bias_correction="beta2max",
+        layer_key_fn=lambda p: p.shape,
+        diagnostics= ARGS.kour_diagnostics
+    )
+```
+
 ## Relation to Kourkoutas-β
 This workload is the **PDE‑heavy sibling** to the 2‑D Transformer demo in
 [`kbeta-transformer2d`](https://github.com/sck-at-ucy/kbeta-transformer2d).  
