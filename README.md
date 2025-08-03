@@ -202,7 +202,7 @@ python -m kbeta_pinn3d.pinn3d \
        --viz
 ```
 
-The paper runs were made with the following defaults hyper-params for Kourkoutas-β
+The paper runs were made with the following default hyperparams for Kourkoutas-β
 
 ```python
     optimizer = KourkoutasSoftmaxFlex(
