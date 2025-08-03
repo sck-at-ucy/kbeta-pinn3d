@@ -20,12 +20,13 @@
 2. [Model highlights](#model-highlights)
 3. [Project layout](#project-layout)
 4. [Quick start](#quick-start)
-5. [Training from scratch](#training-from-scratch)
-6. [Using your own geometry](#using-your-own-geometry)
-7. [Tests & linting](#tests--linting)
-8. [Relation to Kourkoutas‑β](#relation-to-kourkoutas-β)
-9. [Citation](#citation)
-10. [License](#license)
+5. [Installation options 🛠️](#instalation-options)
+6. [Training from scratch](#training-from-scratch)
+7. [Using your own geometry](#using-your-own-geometry)
+8. [Tests & linting](#tests--linting)
+9. [Relation to Kourkoutas‑β](#relation-to-kourkoutas-β)
+10. [Citation](#citation)
+11. [License](#license)
 
 ---
 
@@ -82,6 +83,41 @@ pip install -e ".[dev]"   # installs MLX & plotting stack
 python -m kbeta_pinn3d.pinn3d        --optimizer adam95        --epochs 2000        --viz
 ```
 
+---
+## Installation options&nbsp 🛠️
+
+Choose the *extra* set that best fits your workflow:
+
+* **Bare‑bones command‑line only**
+
+  ```bash
+  pip install kbeta-pinn3d
+  ```
+
+* **Add visualisation stack — matplotlib, seaborn, pandas**
+
+  ```bash
+  pip install kbeta-pinn3d[viz]
+  ```
+
+* **Add Developer tools — pytest, ruff, mypy, pre‑commit hooks**
+
+  ```bash
+  pip install kbeta-pinn3d[dev]
+  ```
+  
+* **Everything (viz + dev)**
+
+  ```bash
+  pip install kbeta-pinn3d[viz,dev]]
+  ```  
+  
+Tip: working from a local clone?
+Activate your virtual‑env and run
+  ```bash
+  pip install kbeta-pinn3d[viz,dev]]
+  ```  
+to get an editable install with the full extra set.  
 ---
 
 ## Training from scratch
