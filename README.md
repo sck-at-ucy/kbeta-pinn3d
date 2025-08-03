@@ -24,7 +24,7 @@
 6. [Training from scratch](#training-from-scratch)
 7. [Using your own geometry](#using-your-own-geometry)
 8. [Tests and linting](#tests-and-linting)
-9. [Command‑line options](#command‑line-options)
+9. [CLI options](#cli-options)
 10. [Relation to Kourkoutas‑β](#relation-to-kourkoutas-β)
 11. [Citation](#citation)
 12. [License](#license)
@@ -171,7 +171,7 @@ CI enforces all of the above on **macOS‑14 (arm64)** runners.
 
 ---
 
-## Command‑line options 
+## CLI options 
 Overriding defaults:
 
 | Flag | Default | Purpose |
@@ -189,6 +189,7 @@ Example runs
 ```bash
 python -m kbeta_pinn3d.pinn3d --optimizer adam95 --epochs 2000 --viz
 ```
+
 ---
 
 # Full 100 k‑epoch paper run with Kourkoutas‑β diagnostics & spike plots
