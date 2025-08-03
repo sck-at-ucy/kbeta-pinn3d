@@ -188,11 +188,11 @@ python -m kbeta_pinn3d.pinn3d --optimizer adam95 --epochs 2000 --viz
 ```
 ---
 
-# Full 20 k‑epoch paper run with Kourkoutas‑β diagnostics & spike plots
+# Full 100 k‑epoch paper run with Kourkoutas‑β diagnostics & spike plots
 ```bash
 python -m kbeta_pinn3d.pinn3d \
        --optimizer kourkoutas \
-       --epochs    20000      \
+       --epochs    100000      \
        --kour_diagnostics     \
        --collect_spikes       \
        --viz
