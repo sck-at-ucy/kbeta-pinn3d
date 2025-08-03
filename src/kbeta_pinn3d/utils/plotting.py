@@ -1,3 +1,32 @@
+"""
+===============================================================================
+Plotting utilities for kbeta‑pinn3d
+-------------------------------------------------------------------------------
+Author   : Stavros Kassinos  <kassinos.stavros@ucy.ac.cy>
+Revision : v0.1.0    (August 2025)
+
+CONTENTS ----------------------------------------------------------------------
+• save_violin(...)                – violin + swarm + baseline + medians
+• save_density_heatmap(...)       – linear‑scale epoch × value heat‑map
+• save_density_heatmap_logscale() – log‑scale variant
+
+DEPENDENCIES ---------------------------------------------------------------  
+These helpers are **lazy‑imported** inside each function so that users who run
+the PINN without the `[viz]` extra never pay the Matplotlib / Seaborn penalty.  
+Missing‑stack errors are caught and re‑raised with a friendly hint:
+
+    pip install kbeta-pinn3d[viz]
+
+LICENCE -----------------------------------------------------------------------
+MIT © 2025 Stavros Kassinos  – see project‑level LICENSE.
+"""
+# Allow re‑exports via «from plotting import *»
+__all__ = [
+    "save_violin",
+    "save_density_heatmap",
+    "save_density_heatmap_logscale",
+]
+
 def save_violin(
         values_dict,
         *,
@@ -12,10 +41,6 @@ def save_violin(
     Violin plot of per‑epoch distributions with baseline & median overlay.
     """
     import os
-
-    #import matplotlib.pyplot as plt
-    #import pandas as pd
-    #import seaborn as sns
     
     try:
         import matplotlib.pyplot as plt
