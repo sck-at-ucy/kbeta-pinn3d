@@ -20,7 +20,7 @@
 2. [Model highlights](#model-highlights)
 3. [Project layout](#project-layout)
 4. [Quick start](#quick-start)
-5. [Installation options 🛠️](#instalation-options)
+5. [Installation options](#instalation-options)
 6. [Training from scratch](#training-from-scratch)
 7. [Using your own geometry](#using-your-own-geometry)
 8. [Tests & linting](#tests--linting)
@@ -84,6 +84,7 @@ python -m kbeta_pinn3d.pinn3d        --optimizer adam95        --epochs 2000    
 ```
 
 ---
+
 ## Installation options
 
 Choose the *extra* set that best fits your workflow:
@@ -118,6 +119,7 @@ Activate your virtual‑env and run
   pip install kbeta-pinn3d[viz,dev]]
   ```  
 to get an editable install with the full extra set.  
+
 ---
 
 ## Training from scratch
