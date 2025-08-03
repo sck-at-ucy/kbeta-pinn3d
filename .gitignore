@@ -1,0 +1,54 @@
+
+# ───── Build / dist artefacts ─────
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+
+# ───── OS / editor cruft ─────
+.DS_Store
+Thumbs.db
+*.swp
+
+
+# virtual envs & editors
+.venv/
+venv/
+env/
+*.env/
+*.venv/
+.vscode/
+.idea/
+.DS_Store
+
+# Python artefacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+*.dylib
+
+# Apple MLX / Metal binaries
+*.metallib
+
+# Large tensor / checkpoint files
+*.safetensors
+*.ckpt
+*.h5
+*.pth
+*.npz
+
+# Generated outputs & datasets
+**/OUTPUTS/
+**/results/
+**/datasets/
+logs_raw/
+
+# Jupyter & doc build
+.ipynb_checkpoints/
+site/
+tests/.venv/
+src/kbeta.egg-info/
+src/kbeta.egg-info/
