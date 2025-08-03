@@ -44,6 +44,7 @@ __pycache__/
 **/OUTPUTS/
 **/results/
 **/datasets/
+**/plots/
 logs_raw/
 
 # Jupyter & doc build
