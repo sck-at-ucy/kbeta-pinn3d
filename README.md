@@ -23,7 +23,7 @@
 5. [Installation options](#installation-options)
 6. [Training from scratch](#training-from-scratch)
 7. [Using your own geometry](#using-your-own-geometry)
-8. [Tests & linting](#tests--linting)
+8. [Tests and linting](#tests-and-linting)
 9. [Command‑line options](#command‑line-options)
 10. [Relation to Kourkoutas‑β](#relation-to-kourkoutas-β)
 11. [Citation](#citation)
