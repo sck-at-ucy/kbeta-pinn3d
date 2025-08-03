@@ -109,7 +109,7 @@ Choose the *extra* set that best fits your workflow:
 * **Everything (viz + dev)**
 
   ```bash
-  pip install kbeta-pinn3d[viz,dev]]
+  pip install kbeta-pinn3d[viz,dev]
   ```  
   
 Tip: working from a local clone?
