@@ -170,6 +170,34 @@ CI enforces all of the above on **macOS‑14 (arm64)** runners.
 
 ---
 
+## Command‑line options & overriding defaults
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `--optimizer {adam95, adam999, kourkoutas}` | `kourkoutas` | Select the optimiser. |
+| `--epochs N` | `6000` | Number of training iterations. |
+| `--seed N` | `0` | Random seed for **both** mesh & model init. |
+| `--viz` | *(off)* | Produce 2‑D/3‑D field plots after training. |
+| `--kour_diagnostics` | *(off)* | Collect lightweight per‑epoch diagnostics (≈ 2 % overhead). |
+| `--collect_spikes` | *(off)* | Store **sun‑spike**/β₂ history for violin & heat‑maps. |
+
+Example runs
+
+# Adam with β₂ = 0.95 for 2 k epochs + field plots
+```bash
+python -m kbeta_pinn3d.pinn3d --optimizer adam95 --epochs 2000 --viz
+```
+---
+
+# Full 20 k‑epoch paper run with Kourkoutas‑β diagnostics & spike plots
+```bash
+python -m kbeta_pinn3d.pinn3d \
+       --optimizer kourkoutas \
+       --epochs    20000      \
+       --kour_diagnostics     \
+       --collect_spikes       \
+       --viz
+```
+
 ## Relation to Kourkoutas‑β
 This workload is the **PDE‑heavy sibling** to the 2‑D Transformer demo in
 [`kbeta-transformer2d`](https://github.com/sck-at-ucy/kbeta-transformer2d).  
@@ -200,3 +228,7 @@ stress *different* regimes:
 Distributed under the MIT License – see [`LICENSE`](LICENSE) for full text.
 
 Happy diffusing 🔥🌀❄️
+
+
+
+
