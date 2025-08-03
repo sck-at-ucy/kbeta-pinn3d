@@ -1,164 +1,166 @@
-# 3‑D Cylindrical PINN for Steady Heat Conduction
+<!--‑‑ CI badge (macOS runner, Apple‑Silicon / MLX) ‑‑>
+[![CI (macOS arm64)](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml)
 
-> **Author**  Stavros Kassinos · University of Cyprus  
-> **Version** `v1.0` (February 2025)  
-> **Framework** [MLX](https://github.com/ml-explore/mlx) (GPU / Apple Silicon)
+| Branch | Status |
+|--------|--------|
+| `main` | ![CI‑main](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=main) |
+| `dev`  | ![CI‑dev](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=dev)  |
 
----
+# kbeta‑pinn3d – *A 3‑D Cylindrical Physics‑Informed Neural Network powered by Kourkoutas‑β*  🌞🦎🧊📐
 
-## 1 . Problem statement
+> Research companion code for our upcoming paper  
+> **“Kourkoutas‑β: Soft‑max Momentum with Adaptive Variance for Mesh‑Accelerated Deep Learning.”**  
+> This repository contains the **3‑D steady‑heat PINN** workload that showcases the optimiser on a complex mixed‑boundary problem.
 
-We solve the steady‑state heat‑diffusion (Laplace) equation  
-
-\[
-\nabla^{2} T = 0
-\]
-
-inside a **distorted cylindrical domain** in \((r, \theta, z)\) with mixed boundary
-conditions:
-
-| Location | Boundary condition |
-|----------|--------------------|
-| **Inner cylinder** \(r=r_{\min}\) | Dirichlet: \(T=1\) |
-| **Inlet plane** \(z=0\) | Dirichlet: \(T=1\) |
-| **Outlet plane** \(z=L_z\) | Neumann: \(\partial T/\partial z = 0\) |
-| **Outer wall** \(r=r_{\max}+0.25\,r_{\max}\sin 3\theta\) | piece‑wise flux |
-| **Azimuth** \(\theta\) | \(2\pi\)-periodic \(T,\partial T/\partial\theta\) |
-
-A Physics‑Informed Neural Network (PINN) enforces the PDE residual at
-interior collocation points and the boundary/periodicity constraints
-at dedicated surface points.
+[Download this README](https://raw.githubusercontent.com/sck-at-ucy/kbeta-pinn3d/main/README.md?download=1)
 
 ---
 
-## 2 . Repository layout
+## Table of Contents
+1. [Why a 3‑D PINN?](#why-a-3-d-pinn)
+2. [Model highlights](#model-highlights)
+3. [Project layout](#project-layout)
+4. [Quick start](#quick-start)
+5. [Training from scratch](#training-from-scratch)
+6. [Using your own geometry](#using-your-own-geometry)
+7. [Tests & linting](#tests--linting)
+8. [Relation to Kourkoutas‑β](#relation-to-kourkoutas-β)
+9. [Citation](#citation)
+10. [License](#license)
 
+---
+
+## Why a 3‑D PINN?
+Classical ML benchmarks rarely **stress second‑moment tracking** because their
+loss landscapes are well‑conditioned.  
+The **cylindrical PINN** provides:
+
+* Extreme scale separation (inner vs outer radius & long aspect‑ratio $begin:math:text$L_z/r$end:math:text$).  
+* **Piece‑wise flux** & Neumann edges that provoke gradient spikes.  
+* A moderate parameter budget (≈ 200 k) → runs on a single Apple‑GPU in < 30 min.
+
+This makes it an *excellent* stress‑test for Kourkoutas‑β’s adaptive β₂ logic.
+
+---
+
+## Model highlights
+| Feature | What it means | Why it matters |
+|---------|---------------|----------------|
+| **Cylindrical Laplacian** coded *analytically* | No autodiff‑derived PDE residual – we write the terms explicitly. | keeps compute graph tiny; MLX JIT can fuse the custom op. |
+| **Mixed BCs** (Dirichlet, Neumann, flux) | Complex outer wall $begin:math:text$r=r_{\\max}+0.25\\,r_{\\max}\\sin3\\theta$end:math:text$. | amplifies gradient variance → showcases optimiser behaviour. |
+| **Periodic θ coupling** | Enforces both $begin:math:text$T$end:math:text$ and $begin:math:text$\\partial T/\\partial\\theta$end:math:text$. | avoids mesh duplication; tests multi‑loss balancing. |
+| **Spike/β₂ tracking hooks** built‑in | 1‑line opt‑in via `--collect_spikes`. | produces violin & density plots (see *plot_utils*). |
+| **Pure‑MLX implementation** | Runs out‑of‑the‑box on Apple Silicon (`pip install mlx`). | zero PyTorch/TensorFlow deps. |
+
+---
+
+## Project layout
 ```
-.
-├── pinn/
-│   ├── train_heat_3d_Asilomar.py    ← main training script
+kbeta-pinn3d
+├── src/kbeta_pinn3d/
+│   ├── __init__.py          # exposes `pinn3d.main`
+│   ├── pinn3d.py            # monolithic training script
 │   └── utils/
-│       ├── plotting.py              ← violin & heat‑map helpers
-│       └── visualization.py         ← 2‑D/3‑D field plots (optional)
-├── kourkoutas/
-│   └── Kourkoutas_optimizer.py      ← Adam‑style optimiser w/ sun‑spike β₂
-└── README.md
+│       ├── plotting.py      # sun‑spike, β₂ violin / heat‑maps
+│       └── visualization.py # 2‑D slice & 3‑D scatter helpers
+├── tests/
+│   ├── test_imports.py      # import smoke test
+│   └── test_forward.py      # tiny forward pass
+├── .github/workflows/ci.yml # macOS‑14 MLX CI
+└── pyproject.toml
 ```
 
 ---
 
-## 3 . Quick start
-
-### 3.1 Prerequisites
-
-* Python ≥ 3.11  
-* **MLX** (GPU build)  
-  ```bash
-  pip install mlx
-  ```
-* Plotting stack (optional)  
-  ```bash
-  pip install matplotlib seaborn pandas
-  ```
-
-### 3.2 Run a short training job
-
+## Quick start
 ```bash
-# vanilla Adam, 2 000 epochs
-python -m pinn.train_heat_3d_Asilomar        --optimizer adam        --epochs 2000        --viz
+git clone git@github.com:sck-at-ucy/kbeta-pinn3d.git
+cd kbeta-pinn3d
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"   # installs MLX & plotting stack
+
+# 1‑minute smoke run (2 000 epochs, Adam‑95)
+python -m kbeta_pinn3d.pinn3d        --optimizer adam95        --epochs 2000        --viz
 ```
 
+---
+
+## Training from scratch
 ```bash
-# Kourkoutas optimiser, diagnostics & spike collection every 500 epochs
-python -m pinn.train_heat_3d_Asilomar        --optimizer kourkoutas        --epochs 20000        --viz        --kour_diagnostics        --collect_spikes
+# Full experiment (20 k epochs) with Kourkoutas‑β + diagnostics
+python -m kbeta_pinn3d.pinn3d \
+       --optimizer kourkoutas \
+       --epochs    20000      \
+       --kour_diagnostics     \
+       --collect_spikes       \
+       --viz
 ```
-
-Outputs:
+Output directories:
 
 ```
-Epoch  500 | lr=0.009996 | loss=1.46e-01 | α=0.93
-   ↳ denom_min=2.10e-03 | upd/ρ_max=2.5 | upd_norm_max=1.2e-02 | v̂_max=4.7e-03
-...
-Time per epoch 0.0016 min
 plots/
- ├─ sunspike_violin/
- ├─ sunspike_heatmap/
- ├─ beta2_violin/
- └─ beta2_heatmap/
+ ├─ sunspike_violin/   *.png
+ ├─ sunspike_heatmap/  *.png
+ ├─ beta2_violin/      *.png
+ ├─ beta2_heatmap/     *.png
+ └─ fields/            slice_Z=0.0.png, ...
 ```
 
 ---
 
-## 4 . Command‑line interface
-
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--optimizer {adam,kourkoutas}` | `kourkoutas` | Choose optimiser |
-| `--epochs N` | `6000` | Number of training iterations |
-| `--seed N` | `0` | Model & numpy random seed (collocation mesh is fixed) |
-| `--viz` | *(off)* | Generate slice/3‑D field plots after training |
-| `--kour_diagnostics` | *(off)* | Enable lightweight per‑epoch diagnostics (≈ 2 % cost) |
-| `--collect_spikes` | *(off)* | Store **sun‑spike**/β₂ history → violin & heat‑maps |
-
-### Windowed spike sampling
-
-Diagnostics are *always* computed in‑kernel when `--kour_diagnostics` is on,
-but spike/β₂ values are only pushed to the history buffers every `WINDOW`
-epochs (default = 500).  
-You can change this by editing `WINDOW` near the top of
-`train_heat_3d_Asilomar.py`.
-
----
-
-## 5 . Visualisation utilities
-
-All routines live in **`pinn/utils/plotting.py`** and take plain Python
-dicts:
-
+## Using your own geometry
+All geometry & sampling constants sit at the **top of `pinn3d.py`**:
 ```python
-from utils.plotting import save_violin, save_density_heatmap
+r_min     = 0.2          # inner radius
+r_max     = 1.0          # mean outer radius
+length_z  = 10.0 * r_max # cylinder length
+num_interior = 4000
+num_boundary = 2000
+```
+Change them, re‑run, done.  
+Boundary helpers (`piecewise_flux`, `compute_normal_derivative_3D_outer`) are
+stand‑alone functions; swap in your own.
 
-save_violin(sunspike_dict, sample_every=5000,
-            label="Sunspike", outdir="plots/sunspike_violin")
+---
 
-save_density_heatmap(betas2_dict,
-                     label="Beta2",
-                     outdir="plots/beta2_heatmap",
-                     num_bins=20, value_range=(0.88,1.0))
+## Tests & linting
+```bash
+pytest -q            # should print ‘2 passed’
+ruff check .         # style / import / naming
+mypy src             # optional static typing pass
 ```
 
-Field visualisation (2‑D slices, stacked 3‑D surfaces, scatter) is kept
-in **`utils/visualization.py`** and is triggered automatically by `--viz`.
+CI enforces all of the above on **macOS‑14 (arm64)** runners.
 
 ---
 
-## 6 . Performance tips
+## Relation to Kourkoutas‑β
+This workload is the **PDE‑heavy sibling** to the 2‑D Transformer demo in
+[`kbeta-transformer2d`](https://github.com/sck-at-ucy/kbeta-transformer2d).  
+Both share the same optimiser code (`kbeta.optim.KourkoutasSoftmaxFlex`) but
+stress *different* regimes:
 
-* Keep **`--kour_diagnostics`** off for production runs — path traces show
-  < 2 % overhead but the absolute fastest path is still without diagnostics.
-* Reduce the collocation sizes (`num_interior`, `num_boundary`) during
-  hyper‑parameter sweeps.
-* MLX auto‑compiles the training step; avoid modifying the
-  `@mx.compile` decorated function inside tight loops.
-
----
-
-## 7 . License
-
-[MIT](LICENSE) © 2025 Stavros Kassinos
+| Repo | Regime tested |
+|------|---------------|
+| `transformer2d` | Dense **autoregressive** gradients, low wall‑clock per step |
+| `pinn3d` | Sparse **PDE‑residual** gradients, high variance, complex BCs |
 
 ---
 
-## 8 . Citation
-
-If you use this code in academic work, please cite:
-
+## Citation
 ```
 @software{Kassinos_PINN_2025,
   author  = {Stavros Kassinos},
   title   = {3‑D Cylindrical PINN for Heat Conduction},
   year    = {2025},
   version = {v1.0},
-  url     = {https://github.com/<your‑repo>}
+  url     = {https://github.com/sck-at-ucy/kbeta-pinn3d}
 }
 ```
+
+---
+
+## License
+Distributed under the MIT License – see [`LICENSE`](LICENSE) for full text.
+
+Happy diffusing 🔥🌀❄️
