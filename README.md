@@ -24,9 +24,10 @@
 6. [Training from scratch](#training-from-scratch)
 7. [Using your own geometry](#using-your-own-geometry)
 8. [Tests & linting](#tests--linting)
-9. [Relation to Kourkoutas‑β](#relation-to-kourkoutas-β)
-10. [Citation](#citation)
-11. [License](#license)
+9. [Command‑line options](#command‑line-options)
+10. [Relation to Kourkoutas‑β](#relation-to-kourkoutas-β)
+11. [Citation](#citation)
+12. [License](#license)
 
 ---
 
@@ -170,7 +171,9 @@ CI enforces all of the above on **macOS‑14 (arm64)** runners.
 
 ---
 
-## Command‑line options & overriding defaults
+## Command‑line options 
+Overriding defaults:
+
 | Flag | Default | Purpose |
 |------|---------|---------|
 | `--optimizer {adam95, adam999, kourkoutas}` | `kourkoutas` | Select the optimiser. |
