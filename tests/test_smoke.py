@@ -20,7 +20,7 @@ from pathlib import Path
 
 def test_import_package() -> None:
     """Import should succeed and expose the version string."""
-    import kbeta_pinn3d as pkg  # noqa: F401
+    import kbeta_pinn3d as pkg
     assert hasattr(pkg, "__version__")
 
 
