@@ -231,7 +231,7 @@ stress *different* regimes:
 ## License
 Distributed under the MIT License – see [`LICENSE`](LICENSE) for full text.
 
-Happy diffusing 🔥🌀❄️
+Happy diffusing 🔥🦎❄️
 
 
 
