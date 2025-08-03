@@ -160,7 +160,7 @@ stand‑alone functions; swap in your own.
 
 ---
 
-## Tests & linting
+## Tests and linting
 ```bash
 pytest -q            # should print ‘2 passed’
 ruff check .         # style / import / naming
