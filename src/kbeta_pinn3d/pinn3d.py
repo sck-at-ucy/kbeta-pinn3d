@@ -1,62 +1,34 @@
 """
 ===============================================================================
-3D Cylindrical PINN for Heat Conduction (Single Process)
+3‑D Cylindrical PINN for Steady Heat Conduction  (single‑process, pure‑MLX)
+-------------------------------------------------------------------------------
+Author   : Stavros Kassinos  <kassinos.stavros@ucy.ac.cy>
+Revision : v0.1.0    (August 2025)
+Hardware : Apple‑Silicon GPU (Metal / MLX backend)
 
-Author: Stavros Kassinos (kassinos.stavros@ucy.ac.cy)
-Date: July 2025
-Code version: 0.0.1
+PROBLEM -----------------------------------------------------------------------
+Solve ∇²T = 0 inside a distorted cylinder (r,θ,z) subject to mixed boundaries:
+  • Inner cylinder r = r_min   : Dirichlet  T = 1
+  • Inlet plane   z = 0       : Dirichlet  T = 1
+  • Outlet plane  z = L_z     : Neumann    ∂T/∂z = 0
+  • Outer wall    r = r_out(θ): piece‑wise heat‑flux
+  • 2π‑periodicity in θ for T and ∂T/∂θ
 
-DESCRIPTION:
-------------
-This script implements a Physics-Informed Neural Network (PINN) in cylindrical
-coordinates (r, θ, z) to solve a steady heat-diffusion (Laplace) equation with
-complex boundary conditions:
-  1) Inner cylinder at r=r_min with T=1.
-  2) Inlet plane at z=0 with T=1.
-  3) Outlet plane at z=length_z with ∂T/∂z=0 (insulated).
-  4) Outer boundary r=r_out(θ)=r_max + 0.25*r_max*sin(3θ) with a specified flux.
-  5) 2π-periodicity in the θ direction.
+Our Physics‑Informed Neural Network (PINN) is a fully‑connected MLP trained
+with MLX’s JIT compiler.  Either **Adam** (β₂ = 0.95 / 0.999) or the paper’s
+**Kourkoutas‑β** optimiser can be selected from the CLI.
 
-We employ a multi-layer perceptron (MLP) from the MLX framework on Apple Silicon,
-sample interior points (for enforcing the PDE residual) and boundary/periodicity
-points (for enforcing boundary conditions). A standard gradient-based optimizer
-(e.g., Adam) trains the neural network by minimizing a composite loss function.
+KEY FEATURES ------------------------------------------------------------------
+• Completely **MPI‑free** – runs out‑of‑the‑box on MacBook M‑series.  
+• **Analytic cylindrical Laplacian** – no second‑order autodiff graph bloat.  
+• **Mixed BC + piece‑wise flux** drive large gradient variance.  
+• Optional **sun‑spike / β₂ tracing hooks** (`--collect_spikes`) for the plots
+  shown in the paper.  
+• **Lightweight visualisation stack** (`[viz]` extra) to generate 2‑D slices
+  and 3‑D scatter plots after training.
 
-FEATURES:
----------
-1) **No MPI**: This is a single-process version. All sampling and training happen
-   in one script, with no distributed data partitioning.
-2) **Cylindrical Laplacian**: We explicitly code the PDE ∇²T = 0 in cylindrical
-   coordinates.
-3) **Boundary Handling**: A piecewise flux on the outer boundary, plus typical Dirichlet
-   and Neumann conditions elsewhere.
-4) **Periodicity**: T and ∂T/∂θ match between θ=0 and θ=2π.
-5) **Visualization**: We provide a range of optional plotting routines—2D slices at
-   various z values, 3D stacked slices, and 3D scatter—to analyze the learned solution.
-
-LICENSE:
---------
-MIT License
-
-Copyright (c) [2025] [STAVROS KASSINOS]
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+LICENSE -----------------------------------------------------------------------
+MIT © 2025 Stavros Kassinos  – see LICENSE file for full text.
 """
 
 # pinn3d.py (inside kbeta_pinn3d)
@@ -72,8 +44,6 @@ import mlx.nn as nn
 import mlx.optimizers as optim
 import numpy as np
 from kbeta.optim import KourkoutasSoftmaxFlex
-
-from .utils.plotting import save_density_heatmap, save_violin
 
 mx.set_default_device(mx.gpu)
 
@@ -370,7 +340,7 @@ def full_like(a, fill_value, dtype=None):
     return mx.full(a.shape, fill_value, dtype=dtype)
 
 # 6.1 Inner Cylinder => T=1
-def boundary_condition_inner_3D(x):
+def boundary_condition_inner_3D(x):         # Legacy helper -- kept for clarity
     """
     Enforce T=1 at the inner cylinder (r=r_min).
 
@@ -383,7 +353,7 @@ def boundary_condition_inner_3D(x):
     return mx.ones_like(x[:,0])
 
 # 6.2 Inlet Plane => T=1
-def boundary_condition_inlet_3D(x):
+def boundary_condition_inlet_3D(x):        # Legacy helper -- kept for clarity
     """
     Enforce T=1 at the inlet plane (z=0).
 
@@ -537,20 +507,20 @@ def loss_fn_3D_realistic():
 # 8. Training Loop
 # =============================================================================
 # ---------------- learning schedule ----------------
-init_lr = 1e-2  # start
-target_lr = 1e-5  # value we want at step 60 and afterwards
-ramp_steps = 40_000  # “epochs” / optimizer steps
+init_lr = 1e-2        # start
+target_lr = 1e-5      # value we want the end of ramp_steps
+ramp_steps = 40_000   # “epochs” / optimizer steps
 
-# 1) cosine ramp 1e-3 → 1e-5 over the first 60 steps
+# 1) cosine ramp init_lr → target_lr over the first ramp_steps
 cosine_part = optim.cosine_decay(init_lr,
                                  decay_steps=ramp_steps,
-                                 end=target_lr)  # :contentReference[oaicite:0]{index=0}
+                                 end=target_lr)
 
 # 2) constant part: simple lambda that ignores the incoming step
 constant_part = lambda _: target_lr
 
-# 3) stitch them together: after step 60 switch to the constant
-lr_schedule = optim.join_schedules(  # :contentReference[oaicite:1]{index=1}
+# 3) stitch them together: after ramp_steps switch to the constant
+lr_schedule = optim.join_schedules(  
     [cosine_part, constant_part],
     [ramp_steps]  # boundary where we transition
 )
@@ -691,7 +661,7 @@ betas2_dict = {}
 # ------------------------------------------------------------------
 buffer_spikes:  list[float] = []
 buffer_betas2:  list[float] = []
-WINDOW = 50                         # epochs per violin
+WINDOW = 500                        # epochs per violin window
 
 tic = time.perf_counter()
 for epoch in range(num_epochs):
@@ -768,7 +738,7 @@ if ARGS.viz:
 
 # 8B: Visualize beta2 and sunspike distribution as heatmaps and biolin plots
 # Example usage:
-if ARGS.collect_spikes and OPTIMIZER_SELECTED == "KOURKOUTAS":       # no data → no plots
+if ARGS.collect_spikes and OPTIMIZER_SELECTED == "KOURKOUTAS":     # no data → no plots
     from .utils.plotting import (
         save_density_heatmap,
         save_violin,
@@ -776,7 +746,8 @@ if ARGS.collect_spikes and OPTIMIZER_SELECTED == "KOURKOUTAS":       # no data �
     
     PLOT_STRIDE = 10 * WINDOW
 
-    save_violin(sunspike_dict, sample_every=PLOT_STRIDE, label="Sunspike", outdir="plots/sunspike_violin")
+    save_violin(sunspike_dict, sample_every=PLOT_STRIDE,
+        label="Sunspike", outdir="plots/sunspike_violin")
     save_density_heatmap(
         sunspike_dict,
         label="Sunspike",
@@ -785,7 +756,8 @@ if ARGS.collect_spikes and OPTIMIZER_SELECTED == "KOURKOUTAS":       # no data �
         value_range=(0.0, 1.0),
     )
 
-    save_violin(betas2_dict, sample_every=PLOT_STRIDE, label="Beta2", outdir="plots/beta2_violin")
+    save_violin(betas2_dict, sample_every=PLOT_STRIDE,
+        label="Beta2", outdir="plots/beta2_violin")
     save_density_heatmap(
         betas2_dict,
         label="Beta2",
@@ -795,3 +767,11 @@ if ARGS.collect_spikes and OPTIMIZER_SELECTED == "KOURKOUTAS":       # no data �
     )
     
 
+# --------------------------------------------------------------------------- #
+# 11.  Allow “python pinn3d.py …” execution                                   #
+# --------------------------------------------------------------------------- #
+if __name__ == "__main__":
+    # All top‑level code above has already run, so nothing to do here.
+    # Keeping a stub maintains consistency with linting tools expecting
+    # an entry‑point guard.
+    pass
