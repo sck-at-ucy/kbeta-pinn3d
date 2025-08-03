@@ -86,7 +86,6 @@ python -m kbeta_pinn3d.pinn3d        --optimizer adam95        --epochs 2000    
 ---
 
 ## Installation options
-
 Choose the *extra* set that best fits your workflow:
 
 * **Bare‑bones command‑line only**
