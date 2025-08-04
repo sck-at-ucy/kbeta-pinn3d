@@ -5,6 +5,12 @@
 | `main` | ![CI‑main](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=main) |
 | `dev`  | ![CI‑dev](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=dev)  |
 
+
+<p align="center">
+  <img src="assets/MLX_Kourkoutas.png" width="300"/>
+    <img src="assets/3d_scatter.png" width="300"/>
+</p>
+
 # kbeta‑pinn3d – *A 3‑D Cylindrical Physics‑Informed Neural Network powered by Kourkoutas‑β*  🌞🦎🧊📐
 
 > Research companion code for our upcoming paper  
