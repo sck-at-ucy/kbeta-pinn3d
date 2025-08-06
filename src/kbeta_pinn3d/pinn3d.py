@@ -100,10 +100,10 @@ def _parse_cli() -> argparse.Namespace:
     p.add_argument(
         "--window",
         type=int,
-        default=1,
-        metavar="EPOCHS",
+        default=None,
+        metavar="N",
         help="Epochs per aggregation bin in the violin plot "
-        "(maps to tracking.window; default 1)",
+        "(maps to tracking.window; defaults to 500 if omitted)",
     )
     p.add_argument(
         "--plot_stride",
@@ -111,7 +111,7 @@ def _parse_cli() -> argparse.Namespace:
         default=None,
         metavar="EPOCHS",
         help="Down‑sample violin categories (default 10×window). "
-        "Use 1 to keep every window.",
+        "Use 1 to keep every window collected.",
     )
     p.add_argument(
         "--outdir",
