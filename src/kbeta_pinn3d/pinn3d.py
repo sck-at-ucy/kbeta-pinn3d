@@ -19,11 +19,11 @@ with MLX’s JIT compiler.  Either **Adam** (β₂ = 0.95 / 0.999) or th
 **Kourkoutas‑β** optimiser can be selected from the CLI.
 
 KEY FEATURES ------------------------------------------------------------------
-• Completely **MPI‑free** – runs out‑of‑the‑box on MacBook M‑series.  
-• **Analytic cylindrical Laplacian** – no second‑order autodiff graph bloat.  
-• **Mixed BC + piece‑wise flux** drive large gradient variance.  
+• Completely **MPI‑free** – runs out‑of‑the‑box on MacBook M‑series.
+• **Analytic cylindrical Laplacian** – no second‑order autodiff graph bloat.
+• **Mixed BC + piece‑wise flux** drive large gradient variance.
 • Optional **sun‑spike / β₂ tracing hooks** (`--collect_spikes`) for the plots
-  shown in the paper.  
+  shown in the paper.
 • **Lightweight visualisation stack** (`[viz]` extra) to generate 2‑D slices
   and 3‑D scatter plots after training.
 
@@ -48,6 +48,7 @@ import numpy as np
 from kbeta.optim import KourkoutasSoftmaxFlex
 
 mx.set_default_device(mx.gpu)
+
 
 # -----------------------------------------------------------------------------
 # 0. CLI ─ enables / disables plotting without pulling extra deps
@@ -129,6 +130,7 @@ def _parse_cli() -> argparse.Namespace:
 
     return args
 
+
 ARGS = _parse_cli()
 
 # -----------------------------------------------------------------------------
@@ -137,6 +139,7 @@ ARGS = _parse_cli()
 BASE_OUT: Path = Path(ARGS.outdir).expanduser().resolve()
 PLOTS_DIR: Path = BASE_OUT / "plots"
 PLOTS_DIR.mkdir(parents=True, exist_ok=True)  # one mkdir ≃ zero overhead
+
 
 def _subdir(name: str) -> str:
     """
@@ -148,23 +151,23 @@ def _subdir(name: str) -> str:
     return str(d)
 
 
-COLLOC_SEED = 12345        # fixed for the whole project ─ collocation mesh
+COLLOC_SEED = 12345  # fixed for the whole project ─ collocation mesh
 
-my_seed     = ARGS.seed
-MODEL_SEED  = my_seed
+my_seed = ARGS.seed
+MODEL_SEED = my_seed
 
 
 OPTIMIZER_SELECTED = ARGS.optimizer.upper()
-num_epochs         = ARGS.epochs
+num_epochs = ARGS.epochs
 
 
 # --- generate data with a fixed seed -------------------
 mx.random.seed(COLLOC_SEED)
 np.random.seed(COLLOC_SEED)
 
-print(f'mx-Random: {mx.random.state}')
-print(f'np-Random: {COLLOC_SEED}')
-print(f'number of epochs: {num_epochs}')
+print(f"mx-Random: {mx.random.state}")
+print(f"np-Random: {COLLOC_SEED}")
+print(f"number of epochs: {num_epochs}")
 
 # =============================================================================
 # 1. Define Domain & Sampling
@@ -173,8 +176,8 @@ r_min = 0.2
 r_max = 1.0
 length_z = 10.0 * r_max  # cylinder extends from z=0 to z=10*r_max
 
-num_interior = 4000   # Number of interior sample points
-num_boundary = 2000   # Number of sample points for each boundary region
+num_interior = 4000  # Number of interior sample points
+num_boundary = 2000  # Number of sample points for each boundary region
 
 # --- 3D Interior Points ---
 theta_interior = mx.random.uniform(0, 2 * math.pi, (num_interior,))
@@ -209,16 +212,16 @@ boundary_inner_3D = mx.stack([r_inner, theta_inner, z_inner], axis=1)
 # --- Inlet Plane (z=0), r in [r_min, r_outer(theta)], theta in [0,2π]
 theta_inlet = mx.random.uniform(0, 2 * math.pi, (num_boundary,))
 r_outer_inlet = r_max + 0.25 * r_max * mx.sin(3 * theta_inlet)
-u_inlet = mx.random.uniform(0,1,(num_boundary,))
-r_inlet = r_min + u_inlet*(r_outer_inlet - r_min)
+u_inlet = mx.random.uniform(0, 1, (num_boundary,))
+r_inlet = r_min + u_inlet * (r_outer_inlet - r_min)
 z_inlet = mx.zeros_like(r_inlet)  # exactly z=0
 boundary_inlet_3D = mx.stack([r_inlet, theta_inlet, z_inlet], axis=1)
 
 # --- Outlet Plane (z=length_z), we want dT/dz=0
 theta_outlet = mx.random.uniform(0, 2 * math.pi, (num_boundary,))
 r_outer_outlet = r_max + 0.25 * r_max * mx.sin(3 * theta_outlet)
-u_outlet = mx.random.uniform(0,1,(num_boundary,))
-r_outlet = r_min + u_outlet*(r_outer_outlet - r_min)
+u_outlet = mx.random.uniform(0, 1, (num_boundary,))
+r_outlet = r_min + u_outlet * (r_outer_outlet - r_min)
 z_outlet = mx.full((num_boundary,), length_z)
 boundary_outlet_3D = mx.stack([r_outlet, theta_outlet, z_outlet], axis=1)
 
@@ -249,14 +252,17 @@ print(f"interior points shape {interior_points_3D.shape}")
 
 mx.random.seed(MODEL_SEED)
 np.random.seed(MODEL_SEED)
-print(f'mx-Random: {mx.random.state}')
-print(f'np-Random: {my_seed}')
+print(f"mx-Random: {mx.random.state}")
+print(f"np-Random: {my_seed}")
+
 
 # =============================================================================
 # 3. Define the 3D MLP Model (inputs: [r, theta, z])
 # =============================================================================
 class MLP_3D(nn.Module):
-    def __init__(self, num_layers: int, input_dim: int, hidden_dim: int, output_dim: int):
+    def __init__(
+        self, num_layers: int, input_dim: int, hidden_dim: int, output_dim: int
+    ):
         """
         A fully-connected neural network (MLP) to learn T(r, θ, z).
 
@@ -310,10 +316,11 @@ n_pin = N_periodic_3D // 5  # 20% pinned at z=0
 z_periodic_3D[:n_pin] = 0.0
 
 theta0_3D = mx.zeros_like(r_periodic_3D)
-theta2pi_3D = mx.full(r_periodic_3D.shape, 2*math.pi)
+theta2pi_3D = mx.full(r_periodic_3D.shape, 2 * math.pi)
 
 theta0_points_3D = mx.stack([r_periodic_3D, theta0_3D, z_periodic_3D], axis=1)
 theta2pi_points_3D = mx.stack([r_periodic_3D, theta2pi_3D, z_periodic_3D], axis=1)
+
 
 def periodicity_loss_3D():
     """
@@ -328,12 +335,10 @@ def periodicity_loss_3D():
 
     grad0 = mx.vmap(grad_T_3D)(theta0_points_3D)
     grad2pi = mx.vmap(grad_T_3D)(theta2pi_points_3D)
-    dT_dtheta_0 = grad0[:,1]
-    dT_dtheta_2pi = grad2pi[:,1]
+    dT_dtheta_0 = grad0[:, 1]
+    dT_dtheta_2pi = grad2pi[:, 1]
 
-    return mx.mean((T0 - T2pi)**2 + (dT_dtheta_0 - dT_dtheta_2pi)**2)
-
-
+    return mx.mean((T0 - T2pi) ** 2 + (dT_dtheta_0 - dT_dtheta_2pi) ** 2)
 
 
 # Instantiate the MLP for 3D domain
@@ -358,8 +363,10 @@ def T_3D(x):
     """
     return mlp_model(x)[0]
 
+
 # Compute the gradient of T with respect to [r, theta, z]
 grad_T_3D = mx.grad(T_3D)
+
 
 def cylindrical_laplacian_T(x):
     """
@@ -378,20 +385,18 @@ def cylindrical_laplacian_T(x):
     # (1) term_r = 1/r * d/dr( r * dT/dr )
     def F(x):
         return x[0] * grad_T_3D(x)[0]  # r * (dT/dr)
+
     dF_dr = mx.grad(F)(x)[0]
     term_r = dF_dr / r
 
     # (2) term_theta = (1/r^2) * d²T/dθ²
     d2T_dtheta2 = mx.grad(lambda xx: grad_T_3D(xx)[1])(x)[1]
-    term_theta = d2T_dtheta2 / (r ** 2)
+    term_theta = d2T_dtheta2 / (r**2)
 
     # (3) term_z = d²T/dz²
     d2T_dz2 = mx.grad(lambda xx: grad_T_3D(xx)[2])(x)[2]
 
     return term_r + term_theta + d2T_dz2
-
-
-
 
 
 # =============================================================================
@@ -411,8 +416,9 @@ def full_like(a, fill_value, dtype=None):
     """
     return mx.full(a.shape, fill_value, dtype=dtype)
 
+
 # 6.1 Inner Cylinder => T=1
-def boundary_condition_inner_3D(x):         # Legacy helper -- kept for clarity
+def boundary_condition_inner_3D(x):  # Legacy helper -- kept for clarity
     """
     Enforce T=1 at the inner cylinder (r=r_min).
 
@@ -422,10 +428,11 @@ def boundary_condition_inner_3D(x):         # Legacy helper -- kept for clarity
     Returns:
         mx.array: shape (N,), all ones.
     """
-    return mx.ones_like(x[:,0])
+    return mx.ones_like(x[:, 0])
+
 
 # 6.2 Inlet Plane => T=1
-def boundary_condition_inlet_3D(x):        # Legacy helper -- kept for clarity
+def boundary_condition_inlet_3D(x):  # Legacy helper -- kept for clarity
     """
     Enforce T=1 at the inlet plane (z=0).
 
@@ -435,7 +442,8 @@ def boundary_condition_inlet_3D(x):        # Legacy helper -- kept for clarity
     Returns:
         mx.array: shape (N,), all ones.
     """
-    return mx.ones_like(x[:,0])
+    return mx.ones_like(x[:, 0])
+
 
 # 6.3 Outlet Plane => dT/dz=0
 def compute_dT_dz_3D(x):
@@ -451,8 +459,9 @@ def compute_dT_dz_3D(x):
         mx.array: shape (N,), each the dT/dz at the point.
     """
     grads = mx.vmap(grad_T_3D)(x)  # shape (N,3)
-    dT_dz = grads[:,2]
+    dT_dz = grads[:, 2]
     return dT_dz
+
 
 # 6.4 Outer Boundary => piecewise flux from 0 to 0.5
 def piecewise_flux(z):
@@ -471,18 +480,18 @@ def piecewise_flux(z):
         mx.array: shape (N,), flux values.
     """
     ramp_start = 2.5 * r_max
-    ramp_end   = 7.5 * r_max
-    flux_max   = 0.5
+    ramp_end = 7.5 * r_max
+    flux_max = 0.5
 
-    cond1 = (z < ramp_start)
+    cond1 = z < ramp_start
     cond2 = mx.logical_and(z >= ramp_start, z <= ramp_end)
 
     fraction = (z - ramp_start) / (ramp_end - ramp_start)
     flux_ramp = flux_max * fraction
 
-    flux_val = mx.where(cond1,
-                        mx.zeros_like(z),
-                        mx.where(cond2, flux_ramp, full_like(z, flux_max)))
+    flux_val = mx.where(
+        cond1, mx.zeros_like(z), mx.where(cond2, flux_ramp, full_like(z, flux_max))
+    )
     return flux_val
 
 
@@ -501,27 +510,25 @@ def compute_normal_derivative_3D_outer(x):
         mx.array: The computed normal derivative ∂T/∂n for each point.
     """
     theta = x[:, 1]
-    r_out = r_max + 0.25*r_max*mx.sin(3*theta)
-    dr_dtheta = 0.75*r_max*mx.cos(3*theta)
+    r_out = r_max + 0.25 * r_max * mx.sin(3 * theta)
+    dr_dtheta = 0.75 * r_max * mx.cos(3 * theta)
 
     norm_factor = mx.sqrt(dr_dtheta**2 + r_out**2)
     n_r = r_out / norm_factor
     n_theta = -dr_dtheta / norm_factor
 
     grad_vals = mx.vmap(grad_T_3D)(x)
-    dT_dr = grad_vals[:,0]
-    dT_dtheta = grad_vals[:,1]
+    dT_dr = grad_vals[:, 0]
+    dT_dtheta = grad_vals[:, 1]
 
-    dT_dn = dT_dr*n_r + (dT_dtheta / r_out)*n_theta
+    dT_dn = dT_dr * n_r + (dT_dtheta / r_out) * n_theta
     return dT_dn
-
-
-
 
 
 # =============================================================================
 # 7. Define Final PDE Loss Function
 # =============================================================================
+
 
 def loss_fn_3D_realistic():
     """
@@ -545,11 +552,11 @@ def loss_fn_3D_realistic():
 
     # (B) Inner boundary loss: T=1
     T_inner = mx.vmap(T_3D)(boundary_inner_3D)
-    loss_inner = mx.mean((T_inner - 1.0)**2)
+    loss_inner = mx.mean((T_inner - 1.0) ** 2)
 
     # (C) Inlet plane loss: T=1
     T_inlet = mx.vmap(T_3D)(boundary_inlet_3D)
-    loss_inlet = mx.mean((T_inlet - 1.0)**2)
+    loss_inlet = mx.mean((T_inlet - 1.0) ** 2)
 
     # (D) Outlet plane loss: dT/dz=0
     dTdz_outlet = compute_dT_dz_3D(boundary_outlet_3D)
@@ -557,64 +564,64 @@ def loss_fn_3D_realistic():
 
     # (E) Outer boundary loss: normal derivative matches piecewise flux
     dT_dn_outer = compute_normal_derivative_3D_outer(boundary_outer_3D)
-    z_out_vals = boundary_outer_3D[:,2]
-    flux_z = - piecewise_flux(z_out_vals)
-    loss_outer = mx.mean((dT_dn_outer - flux_z)**2)
+    z_out_vals = boundary_outer_3D[:, 2]
+    flux_z = -piecewise_flux(z_out_vals)
+    loss_outer = mx.mean((dT_dn_outer - flux_z) ** 2)
 
     # (F) Periodicity loss in θ
     loss_periodic = periodicity_loss_3D()
 
     # Return the weighted sum of all losses
-    return (
-        mx.mean(loss_interior)
-        + 0.05 * (
-        + 25*loss_inner
-        + 100*loss_inlet
-        + 25*loss_outlet
-        + 50*loss_outer
-        + 50*loss_periodic )
+    return mx.mean(loss_interior) + 0.05 * (
+        +25 * loss_inner
+        + 100 * loss_inlet
+        + 25 * loss_outlet
+        + 50 * loss_outer
+        + 50 * loss_periodic
     )
+
 
 # =============================================================================
 # 8. Training Loop
 # =============================================================================
 # ---------------- learning schedule ----------------
-init_lr = 1e-2        # start
-target_lr = 1e-5      # value we want the end of ramp_steps
-ramp_steps = 40_000   # “epochs” / optimizer steps
+init_lr = 1e-2  # start
+target_lr = 1e-5  # value we want the end of ramp_steps
+ramp_steps = 40_000  # “epochs” / optimizer steps
 
 # 1) cosine ramp init_lr → target_lr over the first ramp_steps
-cosine_part = optim.cosine_decay(init_lr,
-                                 decay_steps=ramp_steps,
-                                 end=target_lr)
+cosine_part = optim.cosine_decay(init_lr, decay_steps=ramp_steps, end=target_lr)
 
 # 2) constant part: simple lambda that ignores the incoming step
 constant_part = lambda _: target_lr
 
 # 3) stitch them together: after ramp_steps switch to the constant
-lr_schedule = optim.join_schedules(  
-    [cosine_part, constant_part],
-    [ramp_steps]  # boundary where we transition
+lr_schedule = optim.join_schedules(
+    [cosine_part, constant_part], [ramp_steps]  # boundary where we transition
 )
 
-if OPTIMIZER_SELECTED == "ADAM95" :
-    optimizer = optim.Adam(learning_rate=lr_schedule, betas=[0.90,0.95],  eps=1e-8, bias_correction=True)  # Optimizer instance
+if OPTIMIZER_SELECTED == "ADAM95":
+    optimizer = optim.Adam(
+        learning_rate=lr_schedule, betas=[0.90, 0.95], eps=1e-8, bias_correction=True
+    )  # Optimizer instance
     print(optimizer)
     print(
-    "ADAM95  "
-    f"β1,β2={optimizer.betas} | "
-    f"eps={optimizer.eps:.2e} |"
-    f"bias_correction={optimizer.bias_correction}"
+        "ADAM95  "
+        f"β1,β2={optimizer.betas} | "
+        f"eps={optimizer.eps:.2e} |"
+        f"bias_correction={optimizer.bias_correction}"
     )
-    
-elif OPTIMIZER_SELECTED == "ADAM999" :
-    optimizer = optim.Adam(learning_rate=lr_schedule, betas=[0.90,0.999],  eps=1e-8, bias_correction=True)  # Optimizer instance
+
+elif OPTIMIZER_SELECTED == "ADAM999":
+    optimizer = optim.Adam(
+        learning_rate=lr_schedule, betas=[0.90, 0.999], eps=1e-8, bias_correction=True
+    )  # Optimizer instance
     print(optimizer)
     print(
-    "ADAM999  "
-    f"β1,β2={optimizer.betas} | "
-    f"eps={optimizer.eps:.2e} |"
-    f"bias_correction={optimizer.bias_correction}"
+        "ADAM999  "
+        f"β1,β2={optimizer.betas} | "
+        f"eps={optimizer.eps:.2e} |"
+        f"bias_correction={optimizer.bias_correction}"
     )
 
 
@@ -652,32 +659,29 @@ elif OPTIMIZER_SELECTED == "KOURKOUTAS":
         # You can decide how you want to combine or just use one or the other.
         return (shape_key, param_path)
 
-
-
     optimizer = KourkoutasSoftmaxFlex(
-        learning_rate= lr_schedule,
+        learning_rate=lr_schedule,
         beta1=0.90,
         beta2_max=0.999,
         beta2_min=0.88,
         eps=1e-8,
         alpha=0.93,
-        #alpha = alpha_schedule,
-        tiny_spike=1.e-9,
-        tiny_denom=1.e-8,
+        # alpha = alpha_schedule,
+        tiny_spike=1.0e-9,
+        tiny_denom=1.0e-8,
         decay=0.98,
         adaptive_tiny=True,
         max_ratio=3,
         warmup_steps=0,
         bias_correction="beta2max",
         layer_key_fn=lambda p: p.shape,
-        #layer_key_fn=my_layer_key_fn,  #p: ("1D", p.shape[0]) if p.ndim==1 else id(p),  #my_layer_key_fn,
-        #layer_key_fn=my_layer_key_fn_shape_and_path,
+        # layer_key_fn=my_layer_key_fn,  #p: ("1D", p.shape[0]) if p.ndim==1 else id(p),  #my_layer_key_fn,
+        # layer_key_fn=my_layer_key_fn_shape_and_path,
         # layer_key_fn=my_layer_key_fn_shape,
-        #layer_key_fn=lambda p: id(p),   #my_layer_key_fn,
-        #layer_key_fn=lambda p: "all",
-        diagnostics= ARGS.kour_diagnostics
+        # layer_key_fn=lambda p: id(p),   #my_layer_key_fn,
+        # layer_key_fn=lambda p: "all",
+        diagnostics=ARGS.kour_diagnostics,
     )
-
 
     print(optimizer)
     print(
@@ -706,6 +710,7 @@ state = [mlp_model.state, optimizer.state, mx.random.state]
 
 mx.eval(state)
 
+
 @partial(mx.compile, inputs=state, outputs=state)
 def core_train_step():
     """
@@ -724,23 +729,23 @@ def core_train_step():
     loss, grads = loss_and_grad_fn()
     optimizer.update(mlp_model, grads)
     return loss
-    
+
+
 sunspike_dict = {}  # global or outside the loop
 betas2_dict = {}
 
 # ------------------------------------------------------------------
 # 9. Allocate empty *buffers* once, outside the training loop
 # ------------------------------------------------------------------
-buffer_spikes:  list[float] = []
-buffer_betas2:  list[float] = []
-WINDOW = ARGS.window if ARGS.window is not None else 500 # epochs per aggregation bin
+buffer_spikes: list[float] = []
+buffer_betas2: list[float] = []
+WINDOW = ARGS.window if ARGS.window is not None else 500  # epochs per aggregation bin
 
 tic = time.perf_counter()
 for epoch in range(num_epochs):
 
-    loss  = core_train_step()
+    loss = core_train_step()
     mx.eval(mlp_model, optimizer.state)
-
 
     # ── cheap per‑step statistics collection (only if requested) ───────
     if (
@@ -754,36 +759,42 @@ for epoch in range(num_epochs):
 
     # ── end‑of‑window commit & buffer reset ────────────────────────────
     if (epoch + 1) % WINDOW == 0 and ARGS.collect_spikes:
-        win_label = epoch + 1                      # e.g. 500, 1000, …
+        win_label = epoch + 1  # e.g. 500, 1000, …
         sunspike_dict[win_label] = buffer_spikes[:]  # copy, don’t alias
         betas2_dict[win_label] = buffer_betas2[:]
 
-        buffer_spikes.clear()     # start fresh for next window
+        buffer_spikes.clear()  # start fresh for next window
         buffer_betas2.clear()
 
     # ── periodic console feedback ──────────────────────────────────────
     if (epoch + 1) % 500 == 0:
         if OPTIMIZER_SELECTED == "KOURKOUTAS":
-            print(f"Epoch {epoch + 1:6d} | "
-                  f"lr={optimizer.learning_rate:.5f} | "
-                  f"loss={float(loss):.6e} | "
-                  f"α={float(optimizer.state['alpha']):.2f}")
+            print(
+                f"Epoch {epoch + 1:6d} | "
+                f"lr={optimizer.learning_rate:.5f} | "
+                f"loss={float(loss):.6e} | "
+                f"α={float(optimizer.state['alpha']):.2f}"
+            )
 
             if ARGS.kour_diagnostics:
                 diags = optimizer.snapshot_diagnostics()
-                print("   ↳ "
-                      f"denom_min={diags['diag_denom_min']:.2e} | "
-                      f"upd/ρ_max={diags['diag_max_ratio']:.1f} | "
-                      f"upd_norm_max={diags['diag_upd_norm_max']:.1e} | "
-                      f"v̂_max={diags['diag_vhat_max']:.1e}")
+                print(
+                    "   ↳ "
+                    f"denom_min={diags['diag_denom_min']:.2e} | "
+                    f"upd/ρ_max={diags['diag_max_ratio']:.1f} | "
+                    f"upd_norm_max={diags['diag_upd_norm_max']:.1e} | "
+                    f"v̂_max={diags['diag_vhat_max']:.1e}"
+                )
         else:  # e.g. Adam
-            print(f"Epoch {epoch + 1:6d} | "
-                  f"lr={optimizer.learning_rate:.5f} | "
-                  f"loss={float(loss):.6e}")
+            print(
+                f"Epoch {epoch + 1:6d} | "
+                f"lr={optimizer.learning_rate:.5f} | "
+                f"loss={float(loss):.6e}"
+            )
 
 
 toc = time.perf_counter()
-tpi = (toc - tic) /60 / num_epochs
+tpi = (toc - tic) / 60 / num_epochs
 print(f"Time per epoch {tpi: .5f} (min)")
 
 
@@ -798,18 +809,13 @@ if ARGS.viz:
     slice_dir = _subdir("slices")  # <── new
     for z in [0.0, 1.0 * r_max, 2.5 * r_max, 5.0 * r_max, 7.5 * r_max, 10.0 * r_max]:
         R, TH, T = evaluate_slice(T_3D, r_min, r_max, z)
-        plot_slice_2d(
-            R, TH, T, z_val=z, r_min=r_min, r_max=r_max, outdir=slice_dir
-        )
+        plot_slice_2d(R, TH, T, z_val=z, r_min=r_min, r_max=r_max, outdir=slice_dir)
 
-    plot_scatter_3d(
-        T_3D, r_min, r_max, length_z, N=30, outdir=_subdir("scatter3d")
-    )
+    plot_scatter_3d(T_3D, r_min, r_max, length_z, N=30, outdir=_subdir("scatter3d"))
 
 # Spike‑plots (paths updated) -------------------------------------------
 if ARGS.collect_spikes and OPTIMIZER_SELECTED == "KOURKOUTAS":
     from .utils.plotting import save_density_heatmap, save_violin
-
 
     PLOT_STRIDE = ARGS.plot_stride if ARGS.plot_stride is not None else 10 * WINDOW
 
@@ -841,7 +847,6 @@ if ARGS.collect_spikes and OPTIMIZER_SELECTED == "KOURKOUTAS":
         value_range=(0.88, 1.0),
     )
 
-    
 
 # --------------------------------------------------------------------------- #
 # 11.  Allow “python pinn3d.py …” execution                                   #

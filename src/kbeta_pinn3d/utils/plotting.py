@@ -10,9 +10,9 @@ CONTENTS ----------------------------------------------------------------------
 • save_density_heatmap(...)       – linear‑scale epoch × value heat‑map
 • save_density_heatmap_logscale() – log‑scale variant
 
-DEPENDENCIES ---------------------------------------------------------------  
+DEPENDENCIES ---------------------------------------------------------------
 These helpers are **lazy‑imported** inside each function so that users who run
-the PINN without the `[viz]` extra never pay the Matplotlib / Seaborn penalty.  
+the PINN without the `[viz]` extra never pay the Matplotlib / Seaborn penalty.
 Missing‑stack errors are caught and re‑raised with a friendly hint:
 
     pip install kbeta-pinn3d[viz]
@@ -20,6 +20,7 @@ Missing‑stack errors are caught and re‑raised with a friendly hint:
 LICENCE -----------------------------------------------------------------------
 MIT © 2025 Stavros Kassinos  – see project‑level LICENSE.
 """
+
 # Allow re‑exports via «from plotting import *»
 __all__ = [
     "save_violin",
@@ -27,26 +28,27 @@ __all__ = [
     "save_density_heatmap_logscale",
 ]
 
+
 def save_violin(
-        values_dict,
-        *,
-        label="Beta2",
-        outdir="./violin_plots",
-        sample_every=5,
-        baseline_value=0.999,
-        baseline_label="Adam β₂ = 0.999",
-        show_medians=True,
+    values_dict,
+    *,
+    label="Beta2",
+    outdir="./violin_plots",
+    sample_every=5,
+    baseline_value=0.999,
+    baseline_label="Adam β₂ = 0.999",
+    show_medians=True,
 ):
     """
     Violin plot of per‑epoch distributions with baseline & median overlay.
     """
     import os
-    
+
     try:
         import matplotlib.pyplot as plt
         import pandas as pd
         import seaborn as sns
-    except ModuleNotFoundError as e:          # pragma: no cover
+    except ModuleNotFoundError as e:  # pragma: no cover
         raise ImportError(
             "Optional visualisation stack missing or mis‑configured."
             "Run  pip install kbeta-pinn3d[viz]  to enable --viz features."
@@ -105,8 +107,11 @@ def save_violin(
             zorder=3,
         )
         ax.legend(
-            title="", frameon=False, handlelength=1.2,
-            loc="upper right", borderpad=0.2,
+            title="",
+            frameon=False,
+            handlelength=1.2,
+            loc="upper right",
+            borderpad=0.2,
         )
 
     # ── median overlay ─────────────────────────────────────
@@ -135,10 +140,13 @@ def save_violin(
     print(f"Violin plot saved to {outfile}")
 
 
-
-def save_density_heatmap(values_dict, label="Sunspike",
-                                      num_bins=50, value_range=(0.0, 1.0),
-                                      outdir="./density_heatmap"):
+def save_density_heatmap(
+    values_dict,
+    label="Sunspike",
+    num_bins=50,
+    value_range=(0.0, 1.0),
+    outdir="./density_heatmap",
+):
     """
     Creates and saves a 2D heatmap, where the y-axis is epoch and the x-axis is
     bins of the distribution (e.g. sunspike or beta2). The color indicates how
@@ -169,10 +177,10 @@ def save_density_heatmap(values_dict, label="Sunspike",
     import os
 
     import numpy as np
-    
+
     try:
         import matplotlib.pyplot as plt
-    except ModuleNotFoundError as e:          # pragma: no cover
+    except ModuleNotFoundError as e:  # pragma: no cover
         raise ImportError(
             "Optional visualisation stack missing or mis‑configured."
             "Run  pip install kbeta-pinn3d[viz]  to enable --viz features."
@@ -203,10 +211,10 @@ def save_density_heatmap(values_dict, label="Sunspike",
     plt.imshow(
         epoch_hist,
         extent=[value_range[0], value_range[1], all_epochs[0], all_epochs[-1]],
-        aspect='auto',
-        origin='lower',
+        aspect="auto",
+        origin="lower",
         vmin=0.90,
-        cmap='magma'  # 'viridis' #'magma'  # or 'viridis', 'plasma', etc.
+        cmap="magma",  # 'viridis' #'magma'  # or 'viridis', 'plasma', etc.
     )
     plt.colorbar(label="Count")
 
@@ -224,7 +232,6 @@ def save_density_heatmap(values_dict, label="Sunspike",
     print(f"Density heatmap saved to {outfile}")
 
 
-
 def save_density_heatmap_logscale(
     values_dict,
     label="Sunspike",
@@ -238,21 +245,20 @@ def save_density_heatmap_logscale(
     bins with count=1 or 2 now show up distinctly instead of blending in
     with the color for zero.
     """
-    
+
     import os
 
     import numpy as np
-    
+
     try:
         import matplotlib.pyplot as plt
         from matplotlib.colors import LogNorm
-    except ModuleNotFoundError as e:          # pragma: no cover
+    except ModuleNotFoundError as e:  # pragma: no cover
         raise ImportError(
             "Optional visualisation stack missing or mis‑configured."
             "Run  pip install kbeta-pinn3d[viz]  to enable --viz features."
         ) from e
-    
-    
+
     os.makedirs(outdir, exist_ok=True)
     all_epochs = sorted(values_dict.keys())
     if not all_epochs:
@@ -274,9 +280,9 @@ def save_density_heatmap_logscale(
     plt.imshow(
         epoch_hist_log,
         extent=[value_range[0], value_range[1], all_epochs[0], all_epochs[-1]],
-        aspect='auto',
-        origin='lower',
-        cmap='plasma',
+        aspect="auto",
+        origin="lower",
+        cmap="plasma",
         norm=LogNorm(),
     )
     plt.colorbar(label="Log-scaled Count")
@@ -289,4 +295,3 @@ def save_density_heatmap_logscale(
     plt.savefig(outfile, dpi=300)
     plt.close()
     print(f"Log-scale density heatmap saved to {outfile}")
-

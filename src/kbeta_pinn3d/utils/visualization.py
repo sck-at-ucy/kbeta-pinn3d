@@ -220,9 +220,7 @@ def plot_scatter_3d(
     T = mx.vmap(T_fn)(cyl)
     fig = plt.figure(figsize=(7, 6))
     ax = fig.add_subplot(111, projection="3d")
-    sc = ax.scatter(
-        pts[mask, 0], pts[mask, 1], pts[mask, 2], c=T, cmap="viridis", s=12
-    )
+    sc = ax.scatter(pts[mask, 0], pts[mask, 1], pts[mask, 2], c=T, cmap="viridis", s=12)
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
