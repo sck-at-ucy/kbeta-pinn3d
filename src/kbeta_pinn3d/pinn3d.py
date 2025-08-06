@@ -56,19 +56,28 @@ def _parse_cli() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="3‑D cylindrical heat‑conduction PINN (MX‑GPU, single process)"
     )
+
+    # ── optimiser / generic training flags ──────────────────────────────────
     p.add_argument(
         "--optimizer",
         choices=["adam95", "adam999", "kourkoutas"],
         default="kourkoutas",
         help="Optimiser to use",
     )
-    p.add_argument("--epochs", type=int, default=6_000, help="Training epochs")
+    p.add_argument(
+        "--epochs",
+        type=int,
+        default=6_000,
+        help="Number of training epochs",
+    )
     p.add_argument(
         "--seed",
         type=int,
         default=0,
         help="Model‑initialisation & data seed (collocation mesh is fixed)",
     )
+
+    # ── visualisation & diagnostics ─────────────────────────────────────────
     p.add_argument(
         "--viz",
         action="store_true",
@@ -78,21 +87,41 @@ def _parse_cli() -> argparse.Namespace:
         "--kour_diagnostics",
         action="store_true",
         help="Enable lightweight diagnostics in KourkoutasSoftmaxFlex "
-        "(adds ~2 %% cost)",
+        "(adds ≈2 % overhead)",
     )
+
+    # ── *tracking* group (Sun‑spike / β₂ plots) ─────────────────────────────
     p.add_argument(
         "--collect_spikes",
         action="store_true",
-        help="Trace Sun‑spike / β₂ history for violin + density plots",
+        help="Store per‑layer Sun‑spike / β₂ statistics for violin & density plots "
+        "(implies --kour_diagnostics when the optimiser is Kourkoutas)",
     )
-    # ── NEW: root directory for all runtime artefacts ──────────────────────
     p.add_argument(
-        "--outdir",
-        default="OUTPUTS_PINN3D",
-        metavar="PATH",
-        help="Root directory for checkpoints & plots (default: %(default)s)",
+        "--window",
+        type=int,
+        default=1,
+        metavar="EPOCHS",
+        help="Epochs per aggregation bin in the violin plot "
+        "(maps to tracking.window; default 1)",
     )
-    return p.parse_args()
+    p.add_argument(
+        "--plot_stride",
+        type=int,
+        default=None,
+        metavar="EPOCHS",
+        help="Down‑sample violin categories (default 10×window). "
+        "Use 1 to keep every window.",
+    )
+
+    args = p.parse_args()
+
+    # ── convenience: spike collection → diagnostics auto‑enable ─────────────
+    if args.collect_spikes and not args.kour_diagnostics:
+        print("[info] --collect_spikes implies --kour_diagnostics → auto‑enabled")
+        args.kour_diagnostics = True
+
+    return args
 
 ARGS = _parse_cli()
 
@@ -698,7 +727,7 @@ betas2_dict = {}
 # ------------------------------------------------------------------
 buffer_spikes:  list[float] = []
 buffer_betas2:  list[float] = []
-WINDOW = 500                        # epochs per violin window
+WINDOW = ARGS.window if ARGS.window is not None else 500 # epochs per aggregation bin
 
 tic = time.perf_counter()
 for epoch in range(num_epochs):
@@ -776,7 +805,7 @@ if ARGS.collect_spikes and OPTIMIZER_SELECTED == "KOURKOUTAS":
     from .utils.plotting import save_density_heatmap, save_violin
 
 
-    PLOT_STRIDE = 10 * WINDOW
+    PLOT_STRIDE = ARGS.plot_stride if ARGS.plot_stride is not None else 10 * WINDOW
 
     save_violin(
         sunspike_dict,
