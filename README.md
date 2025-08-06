@@ -191,9 +191,12 @@ Overriding defaults:
 
 > **Notes on spike tracking**  
 > To actually record Sun‑spike/β₂ you need **all** of: `--optimizer=kourkoutas`, `--kour_diagnostics`, **and** `--collect_spikes`. Enabling `--collect_spikes` auto-enables `--kour_diagnostics` as well.
+
 > The windowing/plot stride is controlled via '--window' and '--stride'. 
-> '--window N': Spikes are first aggregated over N epochs (default = 500). Each window → one violin.
-> '--window=N': Keep only every M‑th violin after aggregation (default = 10×window).
+
+> '--window N' ↦ Spikes are first aggregated over N epochs (default = 500). Each window → one violin.
+
+> '--window=N' ↦ Keep only every M‑th violin after aggregation (default = 10×window).
   
 
 
