@@ -113,6 +113,12 @@ def _parse_cli() -> argparse.Namespace:
         help="Down‑sample violin categories (default 10×window). "
         "Use 1 to keep every window.",
     )
+    p.add_argument(
+        "--outdir",
+        default="OUTPUTS_PINN3D",
+        metavar="PATH",
+        help="Root directory for checkpoints & plots (default: %(default)s)",
+    )
 
     args = p.parse_args()
 
