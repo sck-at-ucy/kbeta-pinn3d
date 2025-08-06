@@ -88,7 +88,7 @@ def _parse_cli() -> argparse.Namespace:
         "--kour_diagnostics",
         action="store_true",
         help="Enable lightweight diagnostics in KourkoutasSoftmaxFlex "
-        "(adds ≈2 % overhead)",
+        "(adds ≈2 %% overhead)",
     )
 
     # ── *tracking* group (Sun‑spike / β₂ plots) ─────────────────────────────
@@ -118,7 +118,7 @@ def _parse_cli() -> argparse.Namespace:
         "--outdir",
         default="OUTPUTS_PINN3D",
         metavar="PATH",
-        help="Root directory for checkpoints & plots (default: %(default)s)",
+        help="Root directory for checkpoints & plots (default: %%(default)s)",
     )
 
     args = p.parse_args()
