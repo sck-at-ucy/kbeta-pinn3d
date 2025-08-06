@@ -36,8 +36,10 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 import time
 from functools import partial
+from pathlib import Path
 
 import mlx.core as mx
 import mlx.nn as nn
@@ -50,31 +52,66 @@ mx.set_default_device(mx.gpu)
 # -----------------------------------------------------------------------------
 # 0. CLI ─ enables / disables plotting without pulling extra deps
 # -----------------------------------------------------------------------------
-def _parse_cli():
+def _parse_cli() -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="3‑D cylindrical heat‑conduction PINN (MX‑GPU, single process)")
-    p.add_argument("--optimizer",
-                   choices=["adam95", "adam999", "kourkoutas"],
-                   default="kourkoutas",
-                   help="Optimiser to use")
-    p.add_argument("--epochs", type=int, default=6_000,
-                   help="Number of training epochs")
-    p.add_argument("--seed",   type=int, default=0,
-                   help="Model‑initialisation & data seed (collocation mesh is fixed)")
-    p.add_argument("--viz", action="store_true",
-                   help="Run the optional solution‑visualisation code at the end")
-    p.add_argument("--kour_diagnostics",
-                   action="store_true",
-                   help="Enable lightweight diagnostics in "
-                        "KourkoutasSoftmaxFlex (adds ~2 %% cost)")
-    p.add_argument("--collect_spikes",
-               action="store_true",
-               help="Call snapshot_sunspike_history() inside the epoch loop")
+        description="3‑D cylindrical heat‑conduction PINN (MX‑GPU, single process)"
+    )
+    p.add_argument(
+        "--optimizer",
+        choices=["adam95", "adam999", "kourkoutas"],
+        default="kourkoutas",
+        help="Optimiser to use",
+    )
+    p.add_argument("--epochs", type=int, default=6_000, help="Training epochs")
+    p.add_argument(
+        "--seed",
+        type=int,
+        default=0,
+        help="Model‑initialisation & data seed (collocation mesh is fixed)",
+    )
+    p.add_argument(
+        "--viz",
+        action="store_true",
+        help="Run the optional solution‑visualisation code at the end",
+    )
+    p.add_argument(
+        "--kour_diagnostics",
+        action="store_true",
+        help="Enable lightweight diagnostics in KourkoutasSoftmaxFlex "
+        "(adds ~2 %% cost)",
+    )
+    p.add_argument(
+        "--collect_spikes",
+        action="store_true",
+        help="Trace Sun‑spike / β₂ history for violin + density plots",
+    )
+    # ── NEW: root directory for all runtime artefacts ──────────────────────
+    p.add_argument(
+        "--outdir",
+        default="OUTPUTS_PINN3D",
+        metavar="PATH",
+        help="Root directory for checkpoints & plots (default: %(default)s)",
+    )
     return p.parse_args()
 
 ARGS = _parse_cli()
 
-print(ARGS.kour_diagnostics)
+# -----------------------------------------------------------------------------
+# I/O‑root & helpers  (NEW CODE)
+# -----------------------------------------------------------------------------
+BASE_OUT: Path = Path(ARGS.outdir).expanduser().resolve()
+PLOTS_DIR: Path = BASE_OUT / "plots"
+PLOTS_DIR.mkdir(parents=True, exist_ok=True)  # one mkdir ≃ zero overhead
+
+def _subdir(name: str) -> str:
+    """
+    Return *str* path to BASE_OUT / plots / <name> after creating it.
+    All downstream code stays identical – we only swapped literals.
+    """
+    d = PLOTS_DIR / name
+    d.mkdir(parents=True, exist_ok=True)
+    return str(d)
+
 
 COLLOC_SEED = 12345        # fixed for the whole project ─ collocation mesh
 
@@ -721,50 +758,54 @@ print(f"Time per epoch {tpi: .5f} (min)")
 # 8A: Visualize the temperature filed in slices and 3D scatter plot.
 # Example usage:
 if ARGS.viz:
-    from .utils.visualization import (
-        evaluate_slice,
-        plot_scatter_3d,
-        plot_slice_2d,
-    )
+    from .utils.visualization import evaluate_slice, plot_scatter_3d, plot_slice_2d
 
+    slice_dir = _subdir("slices")  # <── new
     for z in [0.0, 1.0 * r_max, 2.5 * r_max, 5.0 * r_max, 7.5 * r_max, 10.0 * r_max]:
         R, TH, T = evaluate_slice(T_3D, r_min, r_max, z)
-        plot_slice_2d(R, TH, T, z_val=z, r_min=r_min, r_max=r_max)
-    
-    
-    # Usage example (after the training loop):
-    plot_scatter_3d(T_3D, r_min, r_max, length_z, N=30)
-    
+        plot_slice_2d(
+            R, TH, T, z_val=z, r_min=r_min, r_max=r_max, outdir=slice_dir
+        )
 
-# 8B: Visualize beta2 and sunspike distribution as heatmaps and biolin plots
-# Example usage:
-if ARGS.collect_spikes and OPTIMIZER_SELECTED == "KOURKOUTAS":     # no data → no plots
-    from .utils.plotting import (
-        save_density_heatmap,
-        save_violin,
+    plot_scatter_3d(
+        T_3D, r_min, r_max, length_z, N=30, outdir=_subdir("scatter3d")
     )
-    
+
+# Spike‑plots (paths updated) -------------------------------------------
+if ARGS.collect_spikes and OPTIMIZER_SELECTED == "KOURKOUTAS":
+    from .utils.plotting import save_density_heatmap, save_violin
+
+
     PLOT_STRIDE = 10 * WINDOW
 
-    save_violin(sunspike_dict, sample_every=PLOT_STRIDE,
-        label="Sunspike", outdir="plots/sunspike_violin")
+    save_violin(
+        sunspike_dict,
+        sample_every=PLOT_STRIDE,
+        label="Sunspike",
+        outdir=_subdir("sunspike_violin"),
+    )
     save_density_heatmap(
         sunspike_dict,
         label="Sunspike",
-        outdir="plots/sunspike_heatmap",
+        outdir=_subdir("sunspike_heatmap"),
         num_bins=20,
         value_range=(0.0, 1.0),
     )
 
-    save_violin(betas2_dict, sample_every=PLOT_STRIDE,
-        label="Beta2", outdir="plots/beta2_violin")
+    save_violin(
+        betas2_dict,
+        sample_every=PLOT_STRIDE,
+        label="Beta2",
+        outdir=_subdir("beta2_violin"),
+    )
     save_density_heatmap(
         betas2_dict,
         label="Beta2",
-        outdir="plots/beta2_heatmap",
+        outdir=_subdir("beta2_heatmap"),
         num_bins=20,
         value_range=(0.88, 1.0),
     )
+
     
 
 # --------------------------------------------------------------------------- #
