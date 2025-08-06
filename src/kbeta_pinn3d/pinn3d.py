@@ -82,7 +82,7 @@ def _parse_cli() -> argparse.Namespace:
     p.add_argument(
         "--viz",
         action="store_true",
-        help="Run the optional solution‑visualisation code at the end",
+        help="Run the optional temperature field visualisation at the end",
     )
     p.add_argument(
         "--kour_diagnostics",
