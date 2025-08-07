@@ -12,7 +12,7 @@ dependencies = [
   "mlx>=0.27",            # Apple‑MLX
   "numpy>=2.3",
   "matplotlib>=3.9",    
-  "kbeta >=1.0.1a0,<2"]
+  "kbeta >=1.0.1a0,<2",
   #"seaborn>=0.13",    
   #"pandas>=2.2",
 ]
