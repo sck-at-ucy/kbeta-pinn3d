@@ -134,7 +134,7 @@ def _parse_cli() -> argparse.Namespace:
 ARGS = _parse_cli()
 
 # -----------------------------------------------------------------------------
-# I/O‑root & helpers  (NEW CODE)
+# I/O‑root & helpers
 # -----------------------------------------------------------------------------
 BASE_OUT: Path = Path(ARGS.outdir).expanduser().resolve()
 PLOTS_DIR: Path = BASE_OUT / "plots"
@@ -526,7 +526,7 @@ def compute_normal_derivative_3D_outer(x):
 
 
 # =============================================================================
-# 7. Define Final PDE Loss Function
+# 7. Define final PDE Loss Function
 # =============================================================================
 
 
@@ -675,13 +675,18 @@ elif OPTIMIZER_SELECTED == "KOURKOUTAS":
         warmup_steps=0,
         bias_correction="beta2max",
         layer_key_fn=lambda p: p.shape,
-        # layer_key_fn=my_layer_key_fn,  #p: ("1D", p.shape[0]) if p.ndim==1 else id(p),  #my_layer_key_fn,
-        # layer_key_fn=my_layer_key_fn_shape_and_path,
-        # layer_key_fn=my_layer_key_fn_shape,
-        # layer_key_fn=lambda p: id(p),   #my_layer_key_fn,
-        # layer_key_fn=lambda p: "all",
         diagnostics=ARGS.kour_diagnostics,
     )
+
+    # ------------------------------------------------------------------
+    #  (Optional) alternative knobs – kept here *only* as documentation
+    # ------------------------------------------------------------------
+    # kour_kwargs["alpha"]          = alpha_schedule          # cosine schedule
+    # kour_kwargs["layer_key_fn"]   = my_layer_key_fn         # stable param paths
+    # kour_kwargs["layer_key_fn"]   = my_layer_key_fn_shape   # shape buckets
+    # kour_kwargs["layer_key_fn"]   = my_layer_key_fn_shape_and_path
+    # kour_kwargs["layer_key_fn"]   = lambda p: id(p)         # per‑tensor bucket
+    # kour_kwargs["layer_key_fn"]   = lambda p: "all"         # single bucket
 
     print(optimizer)
     print(
