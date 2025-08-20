@@ -262,7 +262,7 @@ If you use this work, please cite both the **paper** and the **software archive*
   year         = {2025},
   publisher    = {Zenodo},
   version      = {1.0.1},
-  doi          = {10.5281/zenodo.XXXXXXX},
+  doi          = {10.5281/zenodo.16915163},
   url          = {https://doi.org/10.5281/zenodo.16915163}
 }
 ```
