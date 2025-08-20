@@ -14,6 +14,7 @@
 > This repository contains the full **3‑D steady‑heat PINN** workload that showcases the optimiser on a complex mixed‑boundary problem.
 > (see the separate [`kbeta`](https://github.com/sck-at-ucy/kbeta) repo), plus lightweight utilities for training, evaluation and visualisation.
 
+
 ---
 
 ## Table of Contents
