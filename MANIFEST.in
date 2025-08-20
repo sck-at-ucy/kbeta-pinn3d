@@ -10,6 +10,7 @@ include src/kbeta_pinn3d/py.typed
 # ───── Exclude unnecessary files ─────
 exclude .gitignore
 exclude .pre-commit-config.yaml
+exclude release_check.sh
 
 # Build / cache / venv artefacts
 recursive-exclude build *

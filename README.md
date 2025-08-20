@@ -21,7 +21,7 @@
 2. [Model highlights](#model-highlights)
 3. [Project layout](#project-layout)
 4. [Quick start](#quick-start)
-5. [Installation options](#installation-options)
+5. [Installation](#installation)
 6. [Training from scratch](#training-from-scratch)
 7. [Using your own geometry](#using-your-own-geometry)
 8. [Tests and linting](#tests-and-linting)
@@ -66,7 +66,7 @@ kbeta-pinn3d
 │       ├── plotting.py      # sun‑spike, β₂ violin / heat‑maps
 │       └── visualization.py # 2‑D slice & 3‑D scatter helpers
 ├── tests/
-│   ├── test_imports.py      # import smoke test
+│   ├── test_smoke.py        # import smoke test
 │   └── test_forward.py      # tiny forward pass
 ├── .github/workflows/ci.yml # macOS‑14 MLX CI
 └── pyproject.toml
@@ -87,39 +87,39 @@ python -m kbeta_pinn3d.pinn3d --optimizer adam95 --epochs 2000 --viz
 
 ---
 
-## Installation options
-Choose the *extra* set that best fits your workflow:
+## Installation
 
-* **Bare‑bones command‑line only**
+### Option 1: PyPI wheels (end‑users)
+If you only want to run the **PINN3D** benchmark with the latest `kbeta`:
 
-  ```bash
-  pip install kbeta-pinn3d
-  ```
+```bash
+pip install kbeta-pinn3d
+```
 
-* **Add visualisation stack — matplotlib, seaborn, pandas**
+For dev tools and tests:
 
-  ```bash
-  pip install kbeta-pinn3d[viz]
-  ```
+```bash
+pip install "kbeta-pinn3d[dev]"
+```
 
-* **Add Developer tools — pytest, ruff, mypy, pre‑commit hooks**
+For visualisation/plotting extras (matplotlib, seaborn, pandas):
 
-  ```bash
-  pip install kbeta-pinn3d[dev]
-  ```
-  
-* **Everything (viz + dev)**
+```bash
+pip install "kbeta-pinn3d[viz]"
+```
 
-  ```bash
-  pip install kbeta-pinn3d[viz,dev]
-  ```  
-  
-Tip: working from a local clone?  
-Activate your virtual‑env and run:
-  ```bash
-  pip install -e ".[viz,dev]"
-  ```  
-to get an editable install with the full extra set.  
+---
+
+### Option 2: Cloning the repo (researchers / contributors)
+
+```bash
+git clone https://github.com/sck-at-ucy/kbeta-pinn3d.git
+cd kbeta-pinn3d
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+This makes all configs and scripts editable for research use.
 
 ---
 
@@ -180,13 +180,10 @@ Overriding defaults:
 | `--collect_spikes` | *(off)* | Store **sun‑spike**/β₂ history for violin & heat‑maps. |
 
 > **Notes on spike tracking**  
-> To actually record Sun‑spike/β₂ you need **all** of: `--optimizer=kourkoutas`, `--kour_diagnostics`, **and** `--collect_spikes`. Enabling `--collect_spikes` auto-enables `--kour_diagnostics` as well.
-
-> The windowing/plot stride is controlled via '--window' and '--stride'.  
-
-> '--window N' ↦ Spikes are first aggregated over N epochs (default = 500). Each window → one violin.
-
-> '--stride M' ↦ Keep only every M‑th violin after aggregation (default = 10×window).
+> To actually record Sun‑spike/β₂ you need **all** of: `--optimizer=kourkoutas`, `--kour_diagnostics`, **and** `--collect_spikes`. Enabling `--collect_spikes` auto-enables `--kour_diagnostics` as well.  
+> The windowing/plot stride is controlled via `--window` and `--stride`.  
+> `--window N` ↦ Spikes are first aggregated over N epochs (default = 500). Each window → one violin.  
+> `--stride M` ↦ Keep only every M‑th violin after aggregation (default = 10×window).
 
 ---
 
@@ -254,6 +251,7 @@ If you use this work, please cite both the **paper** and the **software archive*
   year    = {2025},
   url     = {https://arxiv.org/abs/2508.12996}
 }
+```
 
 **Software (Zenodo archive)**  
 ```bibtex
