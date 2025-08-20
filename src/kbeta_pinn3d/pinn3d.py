@@ -45,7 +45,7 @@ import mlx.core as mx
 import mlx.nn as nn
 import mlx.optimizers as optim
 import numpy as np
-from kbeta.optim import KourkoutasSoftmaxFlex
+from kbeta.optim import KourkoutasBeta
 
 mx.set_default_device(mx.gpu)
 
@@ -87,7 +87,7 @@ def _parse_cli() -> argparse.Namespace:
     p.add_argument(
         "--kour_diagnostics",
         action="store_true",
-        help="Enable lightweight diagnostics in KourkoutasSoftmaxFlex "
+        help="Enable lightweight diagnostics in KourkoutasBeta "
         "(adds ≈2 %% overhead)",
     )
 
@@ -659,7 +659,7 @@ elif OPTIMIZER_SELECTED == "KOURKOUTAS":
         # You can decide how you want to combine or just use one or the other.
         return (shape_key, param_path)
 
-    optimizer = KourkoutasSoftmaxFlex(
+    optimizer = KourkoutasBeta(
         learning_rate=lr_schedule,
         beta1=0.90,
         beta2_max=0.999,

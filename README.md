@@ -222,7 +222,7 @@ python -m kbeta_pinn3d.pinn3d \
 The paper runs were made with the following default hyperparams for Kourkoutas-β
 
 ```python
-    optimizer = KourkoutasSoftmaxFlex(
+    optimizer = KourkoutasBeta(
         learning_rate= lr_schedule,
         beta1=0.90,
         beta2_max=0.999,
@@ -244,7 +244,7 @@ The paper runs were made with the following default hyperparams for Kourkoutas-�
 ## Relation to Kourkoutas-β
 This workload is the **PDE‑heavy sibling** to the 2‑D Transformer demo in
 [`kbeta-transformer2d`](https://github.com/sck-at-ucy/kbeta-transformer2d).  
-Both share the same optimiser code (`kbeta.optim.KourkoutasSoftmaxFlex`) but
+Both share the same optimiser code (`kbeta.optim.KourkoutasBeta`) but
 stress *different* regimes:
 
 | Repo | Regime tested |
