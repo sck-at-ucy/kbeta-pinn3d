@@ -1,4 +1,3 @@
-
 # ───── Build / dist artefacts ─────
 .mypy_cache/
 .pytest_cache/
@@ -11,45 +10,54 @@ dist/
 .DS_Store
 Thumbs.db
 *.swp
+.vscode/
+.idea/
 
-
-# virtual envs & editors
+# ───── Virtual environments ─────
 .venv/
 venv/
 env/
 *.env/
 *.venv/
-.vscode/
-.idea/
-.DS_Store
+.venv*/
+tests/.venv/
 
-# Python artefacts
+# ───── Python artefacts ─────
 __pycache__/
+*.pyc
 *.py[cod]
 *.pyo
 *.so
 *.dylib
 
-# Apple MLX / Metal binaries
+# ───── Apple MLX / Metal binaries ─────
 *.metallib
 
-# Large tensor / checkpoint files
+# ───── Large tensor / checkpoint files ─────
 *.safetensors
 *.ckpt
 *.h5
 *.pth
 *.npz
 
-# Generated outputs & datasets
+# ───── Generated outputs & datasets ─────
 **/OUTPUTS/
 **/results/
 **/datasets/
 **/plots/
 logs_raw/
 
-# Jupyter & doc build
+# ───── Runtime experiment outputs ─────
+Datasets_save_*/
+Heatmaps_*/
+InferenceMSE_*/
+Transformer_save_*/
+
+# ───── Data files (avoid shipping heavy corpora) ─────
+data/
+*.zip
+*.txt
+
+# ───── Jupyter & docs ─────
 .ipynb_checkpoints/
 site/
-tests/.venv/
-src/kbeta.egg-info/
-src/kbeta.egg-info/

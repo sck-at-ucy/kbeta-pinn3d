@@ -1,23 +1,18 @@
-[![CI (macOS arm64)](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml)
-
-| Branch | Status |
-|--------|--------|
-| `main` | ![CI‑main](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=main) |
-| `dev`  | ![CI‑dev](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=dev)  |
-
+[![CI: dev install](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=main&job=test-dev)](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml) [![CI: wheel install](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=main&job=test-wheel)](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml) [![PyPI version](https://badge.fury.io/py/kbeta-pinn3d.svg)](https://pypi.org/project/kbeta-pinn3d/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 
 <p align="center">
   <img src="assets/MLX_Kourkoutas.png" width="300"/>
-    <img src="assets/3d_scatter.png" width="300"/>
+  <img src="assets/3d_scatter.png" width="300"/>
 </p>
 
 # kbeta‑pinn3d – *A 3‑D Cylindrical Physics‑Informed Neural Network powered by Kourkoutas‑β*  🌞🦎🧊📐
 
-> Research companion code for our upcoming paper  
-> **“Kourkoutas‑β: Soft‑max Momentum with Adaptive Variance for Mesh‑Accelerated Deep Learning.”**  
-> This repository contains the **3‑D steady‑heat PINN** workload that showcases the optimiser on a complex mixed‑boundary problem.
-
-[Download this README](https://raw.githubusercontent.com/sck-at-ucy/kbeta-pinn3d/main/README.md?download=1)
+> **Research companion code for the upcoming paper**  
+> “Kourkoutas-β: A Sunspike-Driven Adam Optimizer with Desert Flair.”  
+> Published as [arXiv:2508.12996](http://arxiv.org/abs/2508.12996).
+>
+> This repository contains the full **3‑D steady‑heat PINN** workload that showcases the optimiser on a complex mixed‑boundary problem.
+> (see the separate [`kbeta`](https://github.com/sck-at-ucy/kbeta) repo), plus lightweight utilities for training, evaluation and visualisation.
 
 ---
 
@@ -42,7 +37,7 @@ Classical ML benchmarks rarely **stress second‑moment tracking** because their
 loss landscapes are well‑conditioned.  
 The **cylindrical PINN** provides:
 
-* Extreme scale separation (inner vs outer radius & long aspect‑ratio $begin:math:text$L_z/r$end:math:text$).  
+* Extreme scale separation (inner vs outer radius & long aspect‑ratio $L_z/r$).  
 * **Piece‑wise flux** & Neumann edges that provoke gradient spikes.  
 * A moderate parameter budget (≈ 200 k) → runs on a single Apple‑GPU in < 30 min.
 
@@ -54,10 +49,10 @@ This makes it an *excellent* stress‑test for Kourkoutas‑β’s adaptive β�
 | Feature | What it means | Why it matters |
 |---------|---------------|----------------|
 | **Cylindrical Laplacian** coded *analytically* | No autodiff‑derived PDE residual – we write the terms explicitly. | keeps compute graph tiny; MLX JIT can fuse the custom op. |
-| **Mixed BCs** (Dirichlet, Neumann, flux) | Complex outer wall $begin:math:text$r=r_{\\max}+0.25\\,r_{\\max}\\sin3\\theta$end:math:text$. | amplifies gradient variance → showcases optimiser behaviour. |
-| **Periodic θ coupling** | Enforces both $begin:math:text$T$end:math:text$ and $begin:math:text$\\partial T/\\partial\\theta$end:math:text$. | avoids mesh duplication; tests multi‑loss balancing. |
+| **Mixed BCs** (Dirichlet, Neumann, flux) | Complex outer wall $r=r_{\max}+0.25\,r_{\max}\sin3\theta$. | amplifies gradient variance → showcases optimiser behaviour. |
+| **Periodic θ coupling** | Enforces both $T$ and $\partial T/\partial\theta$. | avoids mesh duplication; tests multi‑loss balancing. |
 | **Spike/β₂ tracking hooks** built‑in | 1‑line opt‑in via `--collect_spikes`. | produces violin & density plots (see *plot_utils*). |
-| **Pure‑MLX implementation** | Runs out‑of‑the‑box on Apple Silicon (`pip install mlx`). | zero PyTorch/TensorFlow deps. |
+| **Pure‑MLX implementation** | Runs out‑of‑the-box on Apple Silicon (`pip install mlx`). | zero PyTorch/TensorFlow deps. |
 
 ---
 
@@ -87,7 +82,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"   # installs MLX & plotting stack
 
 # 1‑minute smoke run (2 000 epochs, Adam‑95)
-python -m kbeta_pinn3d.pinn3d        --optimizer adam95        --epochs 2000        --viz
+python -m kbeta_pinn3d.pinn3d --optimizer adam95 --epochs 2000 --viz
 ```
 
 ---
@@ -119,8 +114,8 @@ Choose the *extra* set that best fits your workflow:
   pip install kbeta-pinn3d[viz,dev]
   ```  
   
-Tip: working from a local clone?
-Activate your virtual‑env and run
+Tip: working from a local clone?  
+Activate your virtual‑env and run:
   ```bash
   pip install -e ".[viz,dev]"
   ```  
@@ -131,12 +126,7 @@ to get an editable install with the full extra set.
 ## Training from scratch
 ```bash
 # Full experiment (20 k epochs) with Kourkoutas‑β + diagnostics
-python -m kbeta_pinn3d.pinn3d \
-       --optimizer kourkoutas \
-       --epochs    20000      \
-       --kour_diagnostics     \
-       --collect_spikes       \
-       --viz
+python -m kbeta_pinn3d.pinn3d        --optimizer kourkoutas        --epochs    20000             --kour_diagnostics            --collect_spikes              --viz
 ```
 Output directories:
 
@@ -192,31 +182,26 @@ Overriding defaults:
 > **Notes on spike tracking**  
 > To actually record Sun‑spike/β₂ you need **all** of: `--optimizer=kourkoutas`, `--kour_diagnostics`, **and** `--collect_spikes`. Enabling `--collect_spikes` auto-enables `--kour_diagnostics` as well.
 
-> The windowing/plot stride is controlled via '--window' and '--stride'. 
+> The windowing/plot stride is controlled via '--window' and '--stride'.  
 
 > '--window N' ↦ Spikes are first aggregated over N epochs (default = 500). Each window → one violin.
 
-> '--window=N' ↦ Keep only every M‑th violin after aggregation (default = 10×window).
-  
+> '--stride M' ↦ Keep only every M‑th violin after aggregation (default = 10×window).
 
+---
 
-Example runs
+## Example runs
 
-# Adam with β₂ = 0.95 for 2 k epochs + field plots
+Adam with β₂ = 0.95 for 2 k epochs + field plots
 ```bash
 python -m kbeta_pinn3d.pinn3d --optimizer adam95 --epochs 2000 --viz
 ```
 
 ---
 
-# Full 100 k‑epoch paper run with Kourkoutas‑β diagnostics & spike plots
+Full 100 k‑epoch paper run with Kourkoutas‑β diagnostics & spike plots
 ```bash
-python -m kbeta_pinn3d.pinn3d \
-       --optimizer kourkoutas \
-       --epochs    100000      \
-       --kour_diagnostics     \
-       --collect_spikes       \
-       --viz
+python -m kbeta_pinn3d.pinn3d        --optimizer kourkoutas        --epochs    100000             --kour_diagnostics            --collect_spikes              --viz
 ```
 
 The paper runs were made with the following default hyperparams for Kourkoutas-β
@@ -241,6 +226,8 @@ The paper runs were made with the following default hyperparams for Kourkoutas-�
     )
 ```
 
+---
+
 ## Relation to Kourkoutas-β
 This workload is the **PDE‑heavy sibling** to the 2‑D Transformer demo in
 [`kbeta-transformer2d`](https://github.com/sck-at-ucy/kbeta-transformer2d).  
@@ -255,13 +242,29 @@ stress *different* regimes:
 ---
 
 ## Citation
-```
-@software{Kassinos_PINN_2025,
+
+If you use this work, please cite both the **paper** and the **software archive**:
+
+**Paper (arXiv preprint)**  
+```bibtex
+@article{Kassinos2025Kourkoutas,
+  title   = {Kourkoutas-β: A Sunspike-Driven Adam Optimizer with Desert Flair},
   author  = {Stavros Kassinos},
-  title   = {3‑D Cylindrical PINN for Heat Conduction},
+  journal = {arXiv preprint arXiv:2508.12996},
   year    = {2025},
-  version = {v1.0},
-  url     = {https://github.com/sck-at-ucy/kbeta-pinn3d}
+  url     = {https://arxiv.org/abs/2508.12996}
+}
+
+**Software (Zenodo archive)**  
+```bibtex
+@software{kassinos2025pinn3d,
+  author       = {Stavros Kassinos},
+  title        = {kbeta-pinn3d: 3-D Cylindrical Physics-Informed Neural Network – Companion Code},
+  year         = {2025},
+  publisher    = {Zenodo},
+  version      = {1.0.0},
+  doi          = {10.5281/zenodo.XXXXXXX},
+  url          = {https://doi.org/10.5281/zenodo.XXXXXXX}
 }
 ```
 
@@ -271,7 +274,3 @@ stress *different* regimes:
 Distributed under the MIT License – see [`LICENSE`](LICENSE) for full text.
 
 Happy diffusing 🔥🦎❄️
-
-
-
-

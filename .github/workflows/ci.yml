@@ -1,12 +1,30 @@
 name: CI
+
 on: [push, pull_request]
+
 jobs:
-  test:
-    runs-on: macos-14     # MLX→Metal
+  test-dev:
+    name: Test (dev install)
+    runs-on: macos-14  # MLX requires Metal
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
+        with:
+          python-version: '3.11'
       - run: python -m pip install --upgrade pip
       - run: pip install -e ".[dev]"
-      - run: python -m pytest -q
+      - run: pytest -q
+
+  test-wheel:
+    name: Test (wheel install)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip build
+      - run: python -m build
+      - run: pip install dist/*.whl
+      # Only check import/version, avoid running the full 3D PINN training
+      - run: python -c "import kbeta_pinn3d as pinn; print('Version:', pinn.__version__)"

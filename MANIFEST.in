@@ -1,0 +1,36 @@
+# ───── Include essential metadata ─────
+include README.md
+include LICENSE
+include pyproject.toml
+
+# ───── Include assets (figures in README/docs) ─────
+recursive-include assets *.png
+
+# ───── Include type hints ─────
+include src/kbeta_pinn3d/py.typed
+
+# ───── Exclude unnecessary files ─────
+exclude .gitignore
+exclude .pre-commit-config.yaml
+
+# Build / cache / venv artefacts
+recursive-exclude build *
+recursive-exclude dist *
+recursive-exclude *.egg-info *
+recursive-exclude __pycache__ *
+recursive-exclude .mypy_cache *
+recursive-exclude .pytest_cache *
+recursive-exclude .ruff_cache *
+
+# Training data, logs, outputs
+recursive-exclude data *
+recursive-exclude OUTPUTS *
+recursive-exclude logs_raw *
+recursive-exclude plots *
+exclude *.zip
+exclude *.txt
+exclude *.npz
+exclude *.ckpt
+exclude *.safetensors
+exclude *.h5
+exclude *.pth
