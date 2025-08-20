@@ -1,4 +1,4 @@
-[![CI: dev install](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=main&job=test-dev)](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml) [![CI: wheel install](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=main&job=test-wheel)](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml) [![PyPI version](https://badge.fury.io/py/kbeta-pinn3d.svg)](https://pypi.org/project/kbeta-pinn3d/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![CI: dev install](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=main&job=test-dev)](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml) [![CI: wheel install](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml/badge.svg?branch=main&job=test-wheel)](https://github.com/sck-at-ucy/kbeta-pinn3d/actions/workflows/ci.yml) [![PyPI version](https://badge.fury.io/py/kbeta-pinn3d.svg)](https://pypi.org/project/kbeta-pinn3d/) [![DOI](https://zenodo.org/badge/DOI/10.5281/1031227998.svg)](https://doi.org/10.5281/zenodo.16915164)
 
 <p align="center">
   <img src="assets/MLX_Kourkoutas.png" width="300"/>
@@ -263,7 +263,7 @@ If you use this work, please cite both the **paper** and the **software archive*
   publisher    = {Zenodo},
   version      = {1.0.1},
   doi          = {10.5281/zenodo.XXXXXXX},
-  url          = {https://doi.org/10.5281/zenodo.XXXXXXX}
+  url          = {https://doi.org/10.5281/zenodo.16915163}
 }
 ```
 
