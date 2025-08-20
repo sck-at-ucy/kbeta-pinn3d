@@ -94,7 +94,6 @@ def plot_slice_2d(
 ):
     """Save a filled‑contour r‑θ slice and return the PNG path."""
     plt = _require_viz_stack()
-    from matplotlib import pyplot as _  # satisfies type checkers
 
     outdir = Path(outdir)
     outdir.mkdir(parents=True, exist_ok=True)

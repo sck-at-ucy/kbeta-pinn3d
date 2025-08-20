@@ -36,7 +36,6 @@ from __future__ import annotations
 
 import argparse
 import math
-import os
 import time
 from functools import partial
 from pathlib import Path
@@ -593,7 +592,7 @@ ramp_steps = 40_000  # “epochs” / optimizer steps
 cosine_part = optim.cosine_decay(init_lr, decay_steps=ramp_steps, end=target_lr)
 
 # 2) constant part: simple lambda that ignores the incoming step
-constant_part = lambda _: target_lr
+constant_part = lambda _: target_lr  # noqa: E731, F841
 
 # 3) stitch them together: after ramp_steps switch to the constant
 lr_schedule = optim.join_schedules(

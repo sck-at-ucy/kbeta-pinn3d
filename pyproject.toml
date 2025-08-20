@@ -3,12 +3,13 @@ requires      = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name            = "kbeta-pinn3d"
+name            = "kbeta_pinn3d"
 version         = "1.0.0"
 description     = "3-D cylindrical PINN benchmark for the Kourkoutas-β optimizer paper"
 authors         = [{name = "Stavros Kassinos"}]
 readme          = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.11"
+license = { text = "MIT" }
 
 # --- runtime deps (imported at run-time) ----------
 dependencies = [
@@ -20,7 +21,6 @@ dependencies = [
 
 classifiers = [
   "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: MacOS :: MacOS X",
   "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -71,6 +71,9 @@ include = ["kbeta_pinn3d*"]
 
 [project.scripts]
 kbeta-pinn3d = "kbeta_pinn3d._shim:entry"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
 
 # -------------------------------------------
 # Ruff configuration

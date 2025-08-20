@@ -1,3 +1,6 @@
+# Keep local release script
+!release_check.sh
+
 # ───── Build / dist artefacts ─────
 .mypy_cache/
 .pytest_cache/

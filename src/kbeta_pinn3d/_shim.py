@@ -1,6 +1,5 @@
 # _shim.py – just run the original monolithic module
 import runpy
-import sys
 
 
 def entry() -> None:  # ← console‑script target

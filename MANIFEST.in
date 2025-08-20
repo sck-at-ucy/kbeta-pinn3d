@@ -3,10 +3,8 @@ include README.md
 include LICENSE
 include pyproject.toml
 
-# ───── Include assets (figures in README/docs) ─────
+# ───── Include assets ─────
 recursive-include assets *.png
-
-# ───── Include type hints ─────
 include src/kbeta_pinn3d/py.typed
 
 # ───── Exclude unnecessary files ─────
@@ -26,7 +24,6 @@ recursive-exclude .ruff_cache *
 recursive-exclude data *
 recursive-exclude OUTPUTS *
 recursive-exclude logs_raw *
-recursive-exclude plots *
 exclude *.zip
 exclude *.txt
 exclude *.npz

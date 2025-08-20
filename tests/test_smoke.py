@@ -1,41 +1,46 @@
 # tests/test_smoke.py
 """
-tests/test_smoke.py
-––––––––––––––––––––
-Very‑light integration test for kbeta‑pinn3d:
+Smoke tests for the installed kbeta_pinn3d package.
 
-• Asserts that the top‑level package can be imported.
-• Launches a one‑epoch run via the CLI (Adam‑95, no viz, no diagnostics).
-
-The test is intentionally tiny so that it executes within the default
-10‑second GitHub Actions timeout even on the free macOS arm64 runners.
+These confirm:
+1. The package imports correctly and exposes a version string.
+2. The CLI entry point runs a tiny job without crashing.
 """
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
-from pathlib import Path
 
 
 def test_import_package() -> None:
     """Import should succeed and expose the version string."""
     import kbeta_pinn3d as pkg
+
     assert hasattr(pkg, "__version__")
+    assert isinstance(pkg.__version__, str)
+    assert len(pkg.__version__) > 0
 
 
-def test_cli_one_epoch(tmp_path: Path) -> None:
+def test_cli_one_epoch(tmp_path) -> None:
     """
-    Run `python -m kbeta_pinn3d.pinn3d --epochs 1 --optimizer adam95`
-    inside an empty working directory to avoid polluting the repo tree.
+    Run a 1-epoch training job to check the CLI entry point works.
+
+    Uses the console script `kbeta-pinn3d` if installed (wheel case).
+    Falls back to `python -m kbeta_pinn3d.pinn3d` if running editable.
     """
-    cmd = [
-        sys.executable,
-        "-m",
-        "kbeta_pinn3d.pinn3d",
-        "--epochs", "1",
-        "--optimizer", "adam95",
-    ]
-    # The subprocess inherits our virtual‑env, so MLX is already available.
-    # `check=True` → pytest will fail if the return‑code is non‑zero.
+    if shutil.which("kbeta-pinn3d"):
+        cmd = ["kbeta-pinn3d", "--epochs", "1", "--optimizer", "adam95"]
+    else:
+        cmd = [
+            sys.executable,
+            "-m",
+            "kbeta_pinn3d.pinn3d",
+            "--epochs",
+            "1",
+            "--optimizer",
+            "adam95",
+        ]
+
     subprocess.run(cmd, cwd=tmp_path, check=True)

@@ -11,10 +11,11 @@ from __future__ import annotations
 
 import mlx.core as mx
 import mlx.nn as nn
+import numpy as np
 
 
 class TinyMLP(nn.Module):
-    """3‑layer perceptron: 3 → 8 → 8 → 1."""
+    """3-layer perceptron: 3 → 8 → 8 → 1."""
     def __init__(self) -> None:
         super().__init__()
         self.layers = [
@@ -30,10 +31,14 @@ class TinyMLP(nn.Module):
 
 
 def test_forward_pass() -> None:
-    """Model(x) produces the expected shape and no NaNs/Infs."""
+    """Model(x) produces the expected shape and finite values (no NaNs/Infs)."""
     model = TinyMLP()
     x = mx.random.uniform(-1.0, 1.0, (4, 3))  # 4 sample points, 3 features
     y = model(x)
 
+    # Shape check
     assert y.shape == (4, 1), "Unexpected output shape"
-    assert mx.isfinite(y).all(), "Output contains NaNs or Infs"
+
+    # Robust finiteness check (NumPy fallback covers all MLX versions)
+    y_np = np.array(y)
+    assert np.isfinite(y_np).all(), "Output contains NaNs or Infs"
