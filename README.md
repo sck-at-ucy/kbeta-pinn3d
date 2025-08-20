@@ -261,7 +261,7 @@ If you use this work, please cite both the **paper** and the **software archive*
   title        = {kbeta-pinn3d: 3-D Cylindrical Physics-Informed Neural Network – Companion Code},
   year         = {2025},
   publisher    = {Zenodo},
-  version      = {1.0.0},
+  version      = {1.0.1},
   doi          = {10.5281/zenodo.XXXXXXX},
   url          = {https://doi.org/10.5281/zenodo.XXXXXXX}
 }
