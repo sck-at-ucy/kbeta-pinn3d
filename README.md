@@ -77,7 +77,7 @@ kbeta-pinn3d
 
 ## Quick start
 ```bash
-git clone git@github.com:sck-at-ucy/kbeta-pinn3d.git
+git clone https://github.com/sck-at-ucy/kbeta-pinn3d.git
 cd kbeta-pinn3d
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"   # installs MLX & plotting stack
